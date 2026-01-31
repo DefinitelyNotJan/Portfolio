@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jan Lönnqvist — Designer</title>
+    <style>
+        @font-face {
+            font-family: 'Diatype Variable';
+            src: url('https://type.cargo.site/files/Cargo-DiatypePlusVariable.woff2') format('woff2');
+            font-weight: 200 1000;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: 'Diatype Variable';
+            src: url('https://type.cargo.site/files/Cargo-DiatypePlusVariable-Italic.woff2') format('woff2');
+            font-weight: 200 1000;
+            font-style: italic;
+            font-display: swap;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #000000;
+            --text: rgba(255, 255, 255, 0.92);
+            --text-75: rgba(255, 255, 255, 0.75);
+            --text-60: rgba(255, 255, 255, 0.55);
+            --text-40: rgba(255, 255, 255, 0.35);
+            --text-25: rgba(255, 255, 255, 0.20);
+            --text-10: rgba(255, 255, 255, 0.08);
+            --section-gap: 12vh;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Diatype Variable', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ====== PARALLAX MARQUEE BACKGROUND ====== */
+        #marquee-bg {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+        }
+
+        .bg-row {
+            white-space: nowrap;
+            overflow: visible;
+            line-height: 1.05;
+            will-change: transform;
+            font-size: clamp(2.5rem, 6vw, 5.5rem);
+            perspective: 800px;
+        }
+
+        .bg-row-inner {
+            display: inline-flex;
+            white-space: nowrap;
+            font-family: 'Diatype Variable', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            will-change: transform;
+            font-variant-emoji: text;
+            transform-style: preserve-3d;
+        }
+
+        .bg-chunk {
+            display: inline-block;
+            white-space: nowrap;
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+            color: transparent;
+            /* Layered silk: two gradients at different angles create
+               complex light-catching patterns like real fabric folds */
+            background:
+                repeating-linear-gradient(
+                    85deg,
+                    rgba(160, 170, 210, 0.3) 0%,
+                    rgba(200, 210, 250, 1.0) 3%,
+                    rgba(240, 242, 255, 1.0) 5%,
+                    rgba(200, 210, 250, 1.0) 7%,
+                    rgba(160, 170, 210, 0.3) 10%,
+                    rgba(150, 160, 200, 0.25) 18%,
+                    rgba(180, 195, 240, 0.85) 21%,
+                    rgba(230, 235, 255, 1.0) 23%,
+                    rgba(180, 195, 240, 0.85) 25%,
+                    rgba(150, 160, 200, 0.25) 28%,
+                    rgba(140, 150, 190, 0.2) 40%,
+                    rgba(190, 200, 240, 0.9) 43%,
+                    rgba(235, 238, 255, 1.0) 45%,
+                    rgba(190, 200, 240, 0.9) 47%,
+                    rgba(140, 150, 190, 0.2) 50%
+                ),
+                repeating-linear-gradient(
+                    95deg,
+                    rgba(160, 170, 210, 0.3) 0%,
+                    rgba(210, 218, 250, 0.8) 8%,
+                    rgba(160, 170, 210, 0.3) 16%,
+                    rgba(180, 190, 230, 0.6) 24%,
+                    rgba(160, 170, 210, 0.3) 32%
+                );
+            background-size: 900px 100%, 1400px 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            opacity: 0.032;
+        }
+
+        .bg-chunk .globe {
+            display: inline-block;
+            font-size: 0.7em;
+            vertical-align: middle;
+            font-weight: 400;
+        }
+
+        .bg-divider {
+            display: none;
+        }
+
+        /* ====== FLASHLIGHT CURSOR ====== */
+        .flashlight {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(
+                circle,
+                rgba(220, 225, 255, 0.045) 0%,
+                rgba(200, 210, 255, 0.02) 25%,
+                rgba(180, 195, 240, 0.008) 45%,
+                transparent 70%
+            );
+            mix-blend-mode: screen;
+            transition: opacity 0.3s;
+            opacity: 0;
+        }
+        .flashlight.active { opacity: 1; }
+
+        .flashlight-hard {
+            position: fixed;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(
+                circle,
+                rgba(255, 255, 255, 0.025) 0%,
+                rgba(255, 255, 255, 0.01) 30%,
+                transparent 60%
+            );
+            mix-blend-mode: screen;
+            transition: opacity 0.3s;
+            opacity: 0;
+        }
+        .flashlight-hard.active { opacity: 1; }
+
+        /* Elements lit up by flashlight */
+        .project-header h2,
+        .about-inner h2,
+        .carousel-controls button,
+        nav .nav-links a,
+        .about-inner .contact-links a {
+            transition: text-shadow 0.4s, box-shadow 0.4s, color 0.4s;
+        }
+
+        .project-header h2.lit {
+            text-shadow: 0 0 40px rgba(200, 210, 255, 0.08), 0 0 80px rgba(200, 210, 255, 0.03);
+        }
+
+        .project-description.lit {
+            color: var(--text-60);
+            transition: color 0.4s;
+        }
+
+        .carousel-slide.lit img {
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7),
+                        0 0 30px rgba(200, 210, 255, 0.04),
+                        0 0 1px rgba(200, 210, 255, 0.12);
+            transition: box-shadow 0.4s;
+        }
+
+        .carousel-controls button.lit {
+            border-color: rgba(200, 210, 255, 0.1);
+            box-shadow: 0 0 15px rgba(200, 210, 255, 0.03);
+        }
+
+        .about-portrait.lit {
+            -webkit-mask-image: radial-gradient(ellipse 95% 95% at 50% 50%, black 65%, transparent 100%);
+            mask-image: radial-gradient(ellipse 95% 95% at 50% 50%, black 65%, transparent 100%);
+            transition: all 0.4s;
+        }
+
+        .bg-chunk.lit {
+            opacity: 0.06 !important;
+        }
+
+        .meta span.lit {
+            color: var(--text-50, rgba(255,255,255,0.45));
+            transition: color 0.4s;
+        }
+
+        .contact-links a.lit {
+            color: var(--text-60) !important;
+        }
+
+        /* ====== FILM GRAIN OVERLAY ====== */
+        #grain {
+            position: fixed;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0.035;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size: 256px 256px;
+            mix-blend-mode: screen;
+        }
+
+        /* ====== SCROLLABLE CONTENT ====== */
+        #content {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ====== NAV ====== */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 40px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            background: rgba(0, 0, 0, 0.4);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        nav .logo {
+            width: 64px;
+            height: 64px;
+            flex-shrink: 0;
+            margin: -12px 0;
+        }
+
+        nav .logo a {
+            display: block;
+            width: 100%;
+            height: 100%;
+            text-decoration: none;
+        }
+
+        nav .logo svg {
+            width: 100%;
+            height: 100%;
+            animation: logoSpin 8s linear infinite;
+        }
+
+        nav .logo svg text {
+            font-family: 'Diatype Variable', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            fill: var(--text-75);
+        }
+
+        @keyframes logoSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        nav .nav-links a {
+            font-size: 0.75rem;
+            font-weight: 400;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-40);
+            text-decoration: none;
+            margin-left: 32px;
+            transition: color 0.4s;
+        }
+
+        nav .nav-links a:hover { color: #fff; }
+
+        /* ====== HERO ====== */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 24px;
+            position: relative;
+            z-index: 2;
+        }
+
+
+        .hero .scroll-hint {
+            position: absolute;
+            bottom: 40px;
+            font-size: 0.65rem;
+            font-weight: 400;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--text-25);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        .hero .scroll-hint::after {
+            content: '';
+            display: block;
+            width: 1px;
+            height: 32px;
+            background: linear-gradient(180deg, var(--text-25), transparent);
+            margin: 12px auto 0;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 0.5; }
+        }
+
+        /* ====== PROJECT SECTIONS ====== */
+        .project {
+            min-height: 100vh;
+            padding: var(--section-gap) 48px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .project-header {
+            margin-bottom: 2.5rem;
+        }
+
+        .project-header h2 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+            line-height: 1;
+            color: var(--text);
+        }
+
+        .project-header .meta {
+            margin-top: 1.2rem;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .project-header .meta span {
+            font-size: 0.7rem;
+            font-weight: 400;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-40);
+        }
+
+        .project-description {
+            max-width: 640px;
+            font-size: 1.05rem;
+            font-weight: 500;
+            line-height: 1.6;
+            color: var(--text-60);
+            margin-bottom: 3rem;
+        }
+
+        /* ====== IMAGE CAROUSEL (CSS 3D) ====== */
+        .carousel-wrapper {
+            width: 100%;
+            perspective: 1200px;
+            overflow: hidden;
+            padding: 40px 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .carousel-track {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 100%;
+            height: 500px;
+            transform-style: preserve-3d;
+            cursor: grab;
+            user-select: none;
+            animation: carouselFloat 6s ease-in-out infinite;
+        }
+
+        @keyframes carouselFloat {
+            0%, 100% { transform: translateY(0px) rotateX(0deg); }
+            50% { transform: translateY(-10px) rotateX(0.5deg); }
+        }
+
+        .carousel-track.dragging {
+            cursor: grabbing;
+        }
+
+        .carousel-slide {
+            position: absolute;
+            max-width: 70vw;
+            max-height: 480px;
+            transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                        opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+
+        .carousel-track.dragging .carousel-slide {
+            transition: none;
+        }
+
+        .carousel-slide img {
+            max-width: 500px;
+            max-height: 480px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            display: block;
+            border-radius: 2px;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7),
+                        0 0 1px rgba(200, 210, 255, 0.1);
+            -webkit-user-drag: none;
+            user-select: none;
+            -webkit-mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 60%, transparent 100%);
+            mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 60%, transparent 100%);
+        }
+
+        .carousel-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            margin-top: 2rem;
+        }
+
+        .carousel-controls button {
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-60);
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .carousel-controls button:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(200, 210, 255, 0.2);
+            color: #fff;
+            box-shadow: 0 0 20px rgba(200, 210, 255, 0.05);
+        }
+
+        .carousel-controls .counter {
+            font-size: 0.8rem;
+            font-weight: 400;
+            color: var(--text-40);
+            min-width: 60px;
+            text-align: center;
+        }
+
+        /* ====== SINGLE IMAGE LAYOUT ====== */
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .image-grid img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 8px;
+        }
+
+        /* ====== VIDEO EMBED ====== */
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            padding-bottom: 56.25%;
+            margin: 0 auto;
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border: none;
+            border-radius: 8px;
+        }
+
+        /* ====== DIVIDER ====== */
+        .divider {
+            display: none;
+        }
+
+        /* (marquees removed — parallax background handles this) */
+
+        /* ====== ABOUT SECTION ====== */
+        .about-section {
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--section-gap) 48px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .about-inner {
+            max-width: 560px;
+        }
+
+        .about-portrait {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            border-radius: 2px;
+            margin-bottom: 2.5rem;
+            -webkit-mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 60%, transparent 100%);
+            mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 60%, transparent 100%);
+        }
+
+        .about-inner h2 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0em;
+            margin-bottom: 2rem;
+            color: var(--text);
+        }
+
+        .about-inner p {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            font-weight: 500;
+            color: var(--text-60);
+            margin-bottom: 1.5rem;
+        }
+
+        .about-inner .contact-links {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--text-10);
+        }
+
+        .about-inner .contact-links a {
+            display: block;
+            color: var(--text-40);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 400;
+            margin-bottom: 0.6rem;
+            transition: color 0.3s;
+        }
+
+        .about-inner .contact-links a:hover { color: #fff; }
+
+        /* ====== FOOTER ====== */
+        footer {
+            padding: 30px 48px;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 400;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-25);
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        /* ====== MOBILE ====== */
+        @media (max-width: 768px) {
+            nav { padding: 16px 20px; }
+            .project { padding: var(--section-gap) 20px; }
+            .carousel-slide { width: 320px; max-width: 85vw; }
+            .carousel-track { height: 300px; }
+            .about-section { padding: var(--section-gap) 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- FLASHLIGHT -->
+<div class="flashlight" id="flashlight"></div>
+<div class="flashlight-hard" id="flashlightHard"></div>
+
+<!-- FILM GRAIN -->
+<div id="grain"></div>
+
+<!-- PARALLAX MARQUEE BACKGROUND -->
+<div id="marquee-bg">
+    <div class="bg-divider"></div>
+    <div class="bg-row" data-speed="-0.8"><div class="bg-row-inner"><span class="bg-row-segment">♥ EDUCATE ♥ LOVE → ELEVATE </span></div></div>
+    <div class="bg-divider"></div>
+    <div class="bg-row" data-speed="1.2"><div class="bg-row-inner"><span class="bg-row-segment">ANTIRACISM → QUEER RIGHTS → INTERSECTIONAL FEMINISM → SUSTAINABILITY → </span></div></div>
+    <div class="bg-divider"></div>
+    <div class="bg-row" data-speed="-1.5"><div class="bg-row-inner"><span class="bg-row-segment">BASKETBALL ⚡︎ POWERLIFTING ⚡︎ BOXING ⚡︎ </span></div></div>
+    <div class="bg-divider"></div>
+    <div class="bg-row" data-speed="0.6"><div class="bg-row-inner"><span class="bg-row-segment">JAN LÖNNQVIST ♥ ART DIRECTION ♥ GRAPHIC DESIGN ♥ CULTURE CURATION ♥ UX/UI DESIGN ♥ MOTION GRAPHICS ♥ PRINT PRODUCTION ♥ </span></div></div>
+    <div class="bg-divider"></div>
+    <div class="bg-row" data-speed="-1.4"><div class="bg-row-inner"><span class="bg-row-segment">LITERATURE ♥ PHOTOGRAPHY ♥ MUSIC ♥ 3D ANIMATION ♥ STAND-UP COMEDY ♥ </span></div></div>
+    <div class="bg-divider"></div>
+    <div class="bg-row" data-speed="1.8"><div class="bg-row-inner"><span class="bg-row-segment">HELSINKI <span class="globe">🌐︎</span> AMSTERDAM <span class="globe">🌐︎</span> SAN FRANCISCO <span class="globe">🌐︎</span> </span></div></div>
+    <div class="bg-divider"></div>
+    <div class="bg-row" data-speed="-0.5"><div class="bg-row-inner"><span class="bg-row-segment">FILLING PIECES ♥ RITUALS ♥ IKEA ♥ GLS ♥ DHL ♥ HELLO FRESH ♥ UPM ♥ HVO ♥ </span></div></div>
+    <div class="bg-divider"></div>
+    <div class="bg-row" data-speed="1.3"><div class="bg-row-inner"><span class="bg-row-segment">BRANDING → TYPOGRAPHY → LAYOUT DESIGN → STORYTELLING → FIGMA → ADOBE CC → </span></div></div>
+    <div class="bg-divider"></div>
+    <div class="bg-row" data-speed="-1.0"><div class="bg-row-inner"><span class="bg-row-segment">♥ LOVE → ELEVATE ♥ EDUCATE </span></div></div>
+    <div class="bg-divider"></div>
+</div>
+
+<!-- NAV -->
+<nav>
+    <div class="logo">
+        <a href="#about">
+            <svg viewBox="0 0 100 100">
+                <defs>
+                    <path id="circlePath" d="M 50,50 m -28,0 a 28,28 0 1,1 56,0 a 28,28 0 1,1 -56,0" fill="none"/>
+                </defs>
+                <text><textPath href="#circlePath">JAN LÖNNQVIST •</textPath></text>
+            </svg>
+        </a>
+    </div>
+    <div class="nav-links">
+        <a href="#work">Work</a>
+        <a href="#about">About</a>
+    </div>
+</nav>
+
+<!-- SCROLLABLE CONTENT -->
+<div id="content">
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="scroll-hint">Scroll</div>
+    </section>
+
+    <!-- ==================== PROJECTS ==================== -->
+    <div id="work">
+
+    <!-- FILLING PIECES -->
+    <section class="project" data-project>
+        <div class="project-header">
+            <h2>Filling Pieces</h2>
+            <div class="meta">
+                <span>Art Direction, Graphic Design</span>
+                <span>Adobe CC</span>
+                <span>AMS/NL</span>
+            </div>
+        </div>
+        <p class="project-description">Lookbook design for Filling Pieces' 'United by Generations' 2025 collection. I blended archival imagery and handwriting with contemporary design techniques to showcase the collection's fusion of past and present aesthetics.</p>
+        <div class="carousel-wrapper">
+            <div class="carousel-track" data-carousel>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/M2234023436410699934446659703238/JanLonnqvist_Lookbook_Page_01.jpg" alt="Lookbook Page 1"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/E2234023436429146678520369254854/JanLonnqvist_Lookbook_Page_02.jpg" alt="Lookbook Page 2"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/K2234023436447593422594078806470/JanLonnqvist_Lookbook_Page_04.jpg" alt="Lookbook Page 4"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Z2234023436466040166667788358086/JanLonnqvist_Lookbook_Page_05.jpg" alt="Lookbook Page 5"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/B2234023436484486910741497909702/JanLonnqvist_Lookbook_Page_07.jpg" alt="Lookbook Page 7"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/N2234023436502933654815207461318/JanLonnqvist_Lookbook_Page_08.jpg" alt="Lookbook Page 8"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/O2234023436521380398888917012934/JanLonnqvist_Lookbook_Page_09.jpg" alt="Lookbook Page 9"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/O2234023436539827142962626564550/JanLonnqvist_Lookbook_Page_10.jpg" alt="Lookbook Page 10"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/D2234023436558273887036336116166/JanLonnqvist_Lookbook_Page_12.jpg" alt="Lookbook Page 12"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/K2234023436576720631110045667782/JanLonnqvist_Lookbook_Page_13.jpg" alt="Lookbook Page 13"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/L2234023436595167375183755219398/JanLonnqvist_Lookbook_Page_15.jpg" alt="Lookbook Page 15"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/X2234023436613614119257464771014/JanLonnqvist_Lookbook_Page_16.jpg" alt="Lookbook Page 16"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/I2234023436632060863331174322630/JanLonnqvist_Lookbook_Page_17.jpg" alt="Lookbook Page 17"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/L2234023436650507607404883874246/JanLonnqvist_Lookbook_Page_18.jpg" alt="Lookbook Page 18"></div>
+            </div>
+            <div class="carousel-controls">
+                <button data-prev>&#8592;</button>
+                <span class="counter"><span data-index>01</span> / <span data-total>14</span></span>
+                <button data-next>&#8594;</button>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- RITUALS -->
+    <section class="project" data-project>
+        <div class="project-header">
+            <h2>Rituals</h2>
+            <div class="meta">
+                <span>Art Direction, Graphic Design, DTP</span>
+                <span>Adobe CC, Figma, AI</span>
+                <span>AMS/NL</span>
+            </div>
+        </div>
+        <p class="project-description">As Visual Specialist at Rituals, I led the design for the Ritual of Hammam campaign, which achieved the highest sales in the product's history. I worked on several major campaigns including Christmas Advent, Legend of the Dragon, and Better the Balance / promoting sustainability and supporting the Arhuaco tribe in Colombia. I also contributed to brand identity through design guidelines and the brand book.</p>
+        <div class="carousel-wrapper">
+            <div class="carousel-track" data-carousel>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/V2235624139622741508822904213958/Screenshot-2023-11-08-at-18.19.41.png" alt="Rituals"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/P2235736783835324132882917495238/Screenshot-2023-11-08-at-18.19.25.png" alt="Rituals"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/B2235624139604294764749194662342/Screenshot-2023-11-08-at-18.19.58.png" alt="Rituals"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/B2235621859752747950912000889286/20230926_165858.jpg" alt="Rituals"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/J2235621859844981671280548647366/20230926_165929.jpg" alt="Rituals"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/W2235629804931441194279267865030/20230926_170054.jpg" alt="Rituals"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/K2235621859900321903501677302214/-INT_0923011---SEPT23---Hammam---Hero-banner--270x250-.jpg" alt="Rituals Hammam"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/H2235621859881875159427967750598/Screenshot-2023-07-03-at-18.37.40.png" alt="Rituals"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/W2235621859863428415354258198982/INT_0923008---SEPT23---Hammam---Hammam-GWP---A5-148x208-V3.jpg" alt="Rituals Hammam"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/B2235625176163737754636319068614/20231005_172518.jpg" alt="Rituals"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/J2235625176034610546120352207302/20231005_163701.jpg" alt="Rituals"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/H2235631229112317405025200378310/MicrosoftTeams-image-50.png.jpeg" alt="Rituals"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Y2235627632974900467569241493958/-INT_1023207-OCT23-Legend-of-the-Dragon---WHS-Global-Themed-Table-Heroes-Highlighters-110x250.jpg" alt="Legend of the Dragon"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Z2235625176219077986857447723462/INT_1023202-OCT23-Legend-of-the-Dragon---WHS-Global-Themed-Table-Body-Scrub-140x325.jpg" alt="Legend of the Dragon"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Q2235625176182184498710028620230/dragon-cut.png" alt="Dragon"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/D2235625176255971475004866826694/Screenshot-2023-11-08-at-18.17.01.png" alt="Rituals"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Y2235625176311311707225995481542/Screenshot-2023-11-22-at-16.54.28.png" alt="Rituals"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/U2235625176292864963152285929926/Screenshot-2023-11-22-at-14.54.09.png" alt="Rituals"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Q2235637501300450371452102644166/INT_0923300-SEP23-Advent-2D-Giftset-Tower-flip-card-506x2852.jpeg" alt="Advent"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/U2235637501282003627378393092550/INT_0923301-SEP23-Advent-3D-Giftset-Tower-flip-card-506x2852.jpeg" alt="Advent"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Z2235637501263556883304683540934/INT_0923302-SEP23-Advent-Premium-Giftset-Tower-flip-card-506x2852.jpeg" alt="Advent"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/M2235637501245110139230973989318/20231005_172436.jpg" alt="Rituals"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/B2235637501115982930715007128006/20231005_172423.jpg" alt="Rituals"></div>
+            </div>
+            <div class="carousel-controls">
+                <button data-prev>&#8592;</button>
+                <span class="counter"><span data-index>01</span> / <span data-total>23</span></span>
+                <button data-next>&#8594;</button>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- IKEA -->
+    <section class="project" data-project>
+        <div class="project-header">
+            <h2>IKEA</h2>
+            <div class="meta">
+                <span>Art Direction, Photography, Editing, Graphic Design</span>
+                <span>Adobe CC</span>
+                <span>TUR/FI</span>
+            </div>
+        </div>
+        <p class="project-description">While working for IKEA, we partnered with local climate activists to save the Mälikkälä-Kuninkoja old-growth forest in Turku, Finland from urban development. I visited the forest to capture it through photography, then worked with copywriters to turn it into a campaign. The visuals helped save the forest and reinforced IKEA's commitment to sustainability.</p>
+        <div class="carousel-wrapper">
+            <div class="carousel-track" data-carousel>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/H2234067313577899242954199798214/priima3.jpg" alt="IKEA Forest"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/J2234067313541005754806780694982/Capture77777.PNG" alt="IKEA Campaign"></div>
+            </div>
+            <div class="carousel-controls">
+                <button data-prev>&#8592;</button>
+                <span class="counter"><span data-index>01</span> / <span data-total>02</span></span>
+                <button data-next>&#8594;</button>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- GLS -->
+    <section class="project" data-project>
+        <div class="project-header">
+            <h2>GLS</h2>
+            <div class="meta">
+                <span>Art Direction, Graphic Design, Logo Design, Video Editing</span>
+                <span>Adobe CC, Figma, AI</span>
+                <span>AMS/SF</span>
+            </div>
+        </div>
+        <p class="project-description">Graphic Designer at group level, handling art direction, logo design, iconography, infographics, typography, animation, video editing, and DTP. I collaborated with cross-functional teams across markets and led campaigns spanning print collaterals, expo stands, UI/UX design, and digital assets.</p>
+        <div class="carousel-wrapper">
+            <div class="carousel-track" data-carousel>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/K2234040659526899002622588359110/LosAngeles1.png" alt="GLS Los Angeles"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Q2234040659545345746696297910726/milan1.png" alt="GLS Milan"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/T2234040659471558770401459704262/barcelona1.png" alt="GLS Barcelona"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Q2234034005601844174850224951750/00042_1_HU_App_expresstask_Print_841x1189.png" alt="GLS Print"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/K2234032510382556536248809165254/00042_1_HU_App_expresstask_Print_95x200.png" alt="GLS Print"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Z2234032510401003280322518716870/00042_1_HU_App_expresstask_Print_841x336.png" alt="GLS Print"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/I2234042127371218435839029547462/carousels-02.png" alt="GLS Carousel"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/O2234032510437896768469937820102/00045_Net-Zero-visuals_Scope123-Recovered-06.png" alt="GLS Net Zero"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/U2234032510419450024396228268486/00045_Net-Zero-visuals_Scope123-Recovered-05.png" alt="GLS Net Zero"></div>
+            </div>
+            <div class="carousel-controls">
+                <button data-prev>&#8592;</button>
+                <span class="counter"><span data-index>01</span> / <span data-total>09</span></span>
+                <button data-next>&#8594;</button>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- DHL -->
+    <section class="project" data-project>
+        <div class="project-header">
+            <h2>DHL</h2>
+            <div class="meta">
+                <span>Team Leading, Graphic Design, DTP</span>
+                <span>Adobe CC, Figma, AI</span>
+                <span>AMS/NL</span>
+            </div>
+        </div>
+        <p class="project-description">Data-driven campaign design at agency level for DHL. We identified key demographics and built detailed personas that directed both the art direction and design process. From these personas I created the campaign visuals, then personally led the localisation to adapt content across multiple European markets. The result was a highly targeted, multi-region campaign that boosted DHL's recruitment efforts.</p>
+        <div class="carousel-wrapper">
+            <div class="carousel-track" data-carousel>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/R2234070998554835639395359265222/DHL_CarouselV2_Artboard-1-copy-3.png" alt="DHL Carousel"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/H2234070998536388895321649713606/DHL_CarouselV2_Artboard-1-copy-2.png" alt="DHL Carousel"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/U2234070998573282383469068816838/DHL_Localizations_Eindhoven_LinkedIn.jpg" alt="DHL Localization"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/V2234070998610175871616487920070/DHL_SupplyChain_As_Brand_Animation2_1.gif" alt="DHL Animation"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/P2234070998591729127542778368454/DHL_SupplyChain_As_Brand_Animation.gif" alt="DHL Animation"></div>
+            </div>
+            <div class="carousel-controls">
+                <button data-prev>&#8592;</button>
+                <span class="counter"><span data-index>01</span> / <span data-total>05</span></span>
+                <button data-next>&#8594;</button>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- HELLO FRESH -->
+    <section class="project" data-project>
+        <div class="project-header">
+            <h2>Hello Fresh</h2>
+            <div class="meta">
+                <span>Team Leading, Graphic Design, DTP</span>
+                <span>Adobe CC</span>
+                <span>AMS/NL</span>
+            </div>
+        </div>
+        <p class="project-description">Led a team of three creatives in design and DTP for recipe cards and brand collaborations at HelloFresh. I also designed recipe cards for Green Chef, one of HelloFresh's sub-brands, aligning the designs with Green Chef's focus on healthy, sustainable eating while keeping them visually engaging and easy to follow.</p>
+        <div class="carousel-wrapper">
+            <div class="carousel-track" data-carousel>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Y2234046762244794163879839928774/Screenshot-2025-02-27-at-18.02.54.png" alt="Hello Fresh"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/D2234046762263240907953549480390/Screenshot-2025-02-27-at-18.03.07.png" alt="Hello Fresh"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/P2234046762281687652027259032006/Screenshot-2025-02-27-at-18.03.20.png" alt="Hello Fresh"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/W2234046762300134396100968583622/Screenshot-2025-02-27-at-18.03.33.png" alt="Hello Fresh"></div>
+            </div>
+            <div class="carousel-controls">
+                <button data-prev>&#8592;</button>
+                <span class="counter"><span data-index>01</span> / <span data-total>04</span></span>
+                <button data-next>&#8594;</button>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- UPM -->
+    <section class="project" data-project>
+        <div class="project-header">
+            <h2>UPM</h2>
+            <div class="meta">
+                <span>Graphic Design, Package Design</span>
+                <span>Adobe CC</span>
+                <span>HEL/FI</span>
+            </div>
+        </div>
+        <p class="project-description">Flyers and paper package design for UPM, a leading Finnish forest industry company.</p>
+        <div class="carousel-wrapper">
+            <div class="carousel-track" data-carousel>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/T2235633688450684056056331375046/bioverno_EN.jpg" alt="UPM Bioverno"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/G2235633688432237311982621823430/Lignin_EN.jpg" alt="UPM Lignin"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/C2235633688413790567908912271814/profi_EN.jpg" alt="UPM Profi"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/F2235633688395343823835202720198/recognition_EN.jpg" alt="UPM Recognition"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/U2235633688303110103466654962118/powerhouse_EN.jpg" alt="UPM Powerhouse"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/H2235635051167009013202037903814/UPM_OPTI_wrapper_a3.jpg" alt="UPM Opti"></div>
+            </div>
+            <div class="carousel-controls">
+                <button data-prev>&#8592;</button>
+                <span class="counter"><span data-index>01</span> / <span data-total>06</span></span>
+                <button data-next>&#8594;</button>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- HVO -->
+    <section class="project" data-project>
+        <div class="project-header">
+            <h2>HVO</h2>
+            <div class="meta">
+                <span>Motion Design, Graphic Design</span>
+                <span>Adobe CC</span>
+                <span>AMS/NL</span>
+            </div>
+        </div>
+        <p class="project-description">Animated out-of-home digital screen campaigns for HVO.</p>
+        <div class="carousel-wrapper">
+            <div class="carousel-track" data-carousel>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/M2235640263847949362047133553094/HVO_Herstelcampaign_animation_1.gif" alt="HVO Animation 1"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/R2235640263829502617973424001478/HVO_Herstelcampaign_animation_2.gif" alt="HVO Animation 2"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/A2235640263811055873899714449862/HVO_Herstelcampaign_animation_3.gif" alt="HVO Animation 3"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/U2235640263792609129826004898246/HVO_Herstelcampaign_animation_4.gif" alt="HVO Animation 4"></div>
+                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Q2235640263755715641678585795014/HVO_Herstelcampaign_animation_5.gif" alt="HVO Animation 5"></div>
+            </div>
+            <div class="carousel-controls">
+                <button data-prev>&#8592;</button>
+                <span class="counter"><span data-index>01</span> / <span data-total>05</span></span>
+                <button data-next>&#8594;</button>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- AI -->
+    <section class="project" data-project>
+        <div class="project-header">
+            <h2>AI</h2>
+            <div class="meta">
+                <span>Art Direction, Graphic Design, Video Editing, Motion Design</span>
+                <span>Adobe CC, AI</span>
+                <span>AMS/NL</span>
+            </div>
+        </div>
+        <p class="project-description">Projects created with AI. Back to School social media ad for GLS / all of the models in the video are AI generated.</p>
+        <div class="video-wrapper">
+            <iframe src="https://player.vimeo.com/video/1114624551?h=050d618a27" allowfullscreen></iframe>
+        </div>
+    </section>
+
+    </div><!-- /work -->
+
+    <!-- ABOUT -->
+    <section class="about-section" id="about">
+        <div class="about-inner">
+            <img class="about-portrait" src="https://freight.cargo.site/w/1000/i/I2251116696699520999765586088390/Jan-copy.jpg" alt="Jan Lönnqvist">
+            <h2>Jan</h2>
+            <p>I'm Jan, 31, from Finland, based in the Netherlands. I've spent 8+ years working across agencies, brands, and studios / from DTP and print production to art direction and multi-market campaign design for companies like Rituals, DHL, HelloFresh, IKEA, and GLS.</p>
+            <p>Outside of work I train powerlifting and boxing. My interests include photography, writing, reading, and learning saxophone.</p>
+            <div class="contact-links">
+                <a href="tel:+31619584748">+31 619 584 748</a>
+                <a href="mailto:jan.lonnqvist@windowslive.com">jan.lonnqvist@windowslive.com</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>Jan Lönnqvist / Love, Educate, Elevate</footer>
+
+</div><!-- /content -->
+
+<script>
+// ==================== PARALLAX MARQUEE BACKGROUND ====================
+const bgRows = document.querySelectorAll('.bg-row');
+let smoothScroll = 0;
+let targetScroll = 0;
+let bgReady = false;
+
+// Wait for fonts to load before measuring and creating chunks
+document.fonts.ready.then(() => {
+    bgRows.forEach((row, ri) => {
+        const inner = row.querySelector('.bg-row-inner');
+        const segment = inner.querySelector('.bg-row-segment');
+        if (!segment) return;
+
+        // Measure one segment width accurately after font load
+        const segW = segment.getBoundingClientRect().width;
+        const segText = segment.innerHTML;
+
+        // Create individual chunk elements for 3D ribbon positioning
+        const copies = 30;
+        let html = '';
+        for (let i = 0; i < copies; i++) {
+            html += `<span class="bg-chunk" data-ci="${i}">${segText}</span>`;
+        }
+        inner.innerHTML = html;
+
+        // Store data for animation
+        inner._segW = segW;
+        inner._chunks = inner.querySelectorAll('.bg-chunk');
+    });
+    bgReady = true;
+});
+
+window.addEventListener('scroll', () => {
+    targetScroll = window.scrollY;
+});
+
+function animateBackground() {
+    requestAnimationFrame(animateBackground);
+    if (!bgReady) return;
+
+    smoothScroll += (targetScroll - smoothScroll) * 0.08;
+
+    bgRows.forEach((row, ri) => {
+        const speed = parseFloat(row.dataset.speed);
+        const inner = row.querySelector('.bg-row-inner');
+        const segW = inner._segW;
+        const chunks = inner._chunks;
+        if (!segW || segW < 1 || !chunks) return;
+
+        // Horizontal scroll with wrapping
+        let xOffset = smoothScroll * speed;
+        xOffset = ((xOffset % segW) + segW) % segW;
+        inner.style.transform = `translateX(${xOffset - segW * 10}px)`;
+
+        // Ribbon: each chunk undulates in Z-depth
+        const waveFreq = 1.2;
+        const waveAmp = 250;
+        const scrollPhaseSpeed = 0.008;
+        const direction = speed > 0 ? 1 : -1;
+
+        for (let ci = 0; ci < chunks.length; ci++) {
+            const phase = ci * waveFreq + smoothScroll * scrollPhaseSpeed * direction + ri * 1.5;
+            const z = Math.sin(phase) * waveAmp;
+
+            const normalizedZ = (z + waveAmp) / (waveAmp * 2);
+            const sx = 0.4 + normalizedZ * 0.6;
+
+            // Opacity: deeper = dimmer, closer = brighter
+            // Add a second wave for silk shimmer variation
+            const shimmer = Math.sin(phase * 2.5 + ri * 3.1) * 0.008;
+            const op = 0.028 + normalizedZ * 0.025 + shimmer;
+
+            chunks[ci].style.transform = `translateZ(${z}px) scaleX(${sx})`;
+            chunks[ci].style.opacity = op;
+
+            // Two gradient layers flowing at different speeds + directions
+            const dir = ri % 2 === 0 ? 1 : -1;
+            const silk1 = ci * 90 + smoothScroll * dir * 0.6;
+            const silk2 = ci * 140 + smoothScroll * dir * -0.35;
+            chunks[ci].style.backgroundPosition = `${silk1}px 0, ${silk2}px 0`;
+        }
+    });
+}
+animateBackground();
+
+// ==================== 3D CAROUSELS ====================
+document.querySelectorAll('[data-carousel]').forEach(track => {
+    const slides = Array.from(track.querySelectorAll('.carousel-slide'));
+    const wrapper = track.closest('.carousel-wrapper');
+    const prevBtn = wrapper.querySelector('[data-prev]');
+    const nextBtn = wrapper.querySelector('[data-next]');
+    const indexEl = wrapper.querySelector('[data-index]');
+    const total = slides.length;
+    let current = 0;
+    let isAnimating = false;
+
+    function update() {
+        slides.forEach((slide, i) => {
+            // Calculate shortest offset for wrapping
+            let offset = i - current;
+            if (offset > total / 2) offset -= total;
+            if (offset < -total / 2) offset += total;
+            const absOffset = Math.abs(offset);
+
+            // 3D positioning
+            const translateX = offset * 350;
+            const translateZ = -absOffset * 180;
+            const rotateY = -offset * 20;
+            const opacity = absOffset > 3 ? 0 : Math.max(0, 1 - absOffset * 0.35);
+            const scale = Math.max(0.6, 1 - absOffset * 0.12);
+
+            slide.style.transform = `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`;
+            slide.style.opacity = opacity;
+            slide.style.zIndex = 100 - absOffset;
+        });
+
+        if (indexEl) indexEl.textContent = String(current + 1).padStart(2, '0');
+    }
+
+    function goNext() {
+        current = (current + 1) % total;
+        update();
+    }
+
+    function goPrev() {
+        current = (current - 1 + total) % total;
+        update();
+    }
+
+    if (prevBtn) prevBtn.addEventListener('click', goPrev);
+    if (nextBtn) nextBtn.addEventListener('click', goNext);
+
+    // Touch swipe
+    let touchStartX = 0;
+    let touchStartTime = 0;
+    track.addEventListener('touchstart', e => {
+        touchStartX = e.touches[0].clientX;
+        touchStartTime = Date.now();
+    }, { passive: true });
+    track.addEventListener('touchend', e => {
+        const diff = touchStartX - e.changedTouches[0].clientX;
+        const elapsed = Date.now() - touchStartTime;
+        // Swipe if moved >40px or fast flick
+        if (Math.abs(diff) > 40 || (Math.abs(diff) > 20 && elapsed < 300)) {
+            if (diff > 0) goNext();
+            else goPrev();
+        }
+    }, { passive: true });
+
+    // Mouse drag swipe
+    let dragStartX = 0;
+    let isDragging = false;
+    let dragStartTime = 0;
+
+    track.addEventListener('mousedown', e => {
+        isDragging = true;
+        dragStartX = e.clientX;
+        dragStartTime = Date.now();
+        track.classList.add('dragging');
+        e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', e => {
+        if (!isDragging) return;
+        // Visual feedback could go here
+    });
+
+    window.addEventListener('mouseup', e => {
+        if (!isDragging) return;
+        isDragging = false;
+        track.classList.remove('dragging');
+        const diff = dragStartX - e.clientX;
+        const elapsed = Date.now() - dragStartTime;
+        if (Math.abs(diff) > 40 || (Math.abs(diff) > 20 && elapsed < 300)) {
+            if (diff > 0) goNext();
+            else goPrev();
+        }
+    });
+
+    // Mouse wheel on carousel (horizontal scroll = navigate)
+    wrapper.addEventListener('wheel', e => {
+        // Use horizontal scroll or vertical if no horizontal
+        const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+        if (Math.abs(delta) > 30) {
+            e.preventDefault();
+            if (delta > 0) goNext();
+            else goPrev();
+        }
+    }, { passive: false });
+
+    update();
+});
+
+// ==================== SCROLL REVEAL ====================
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+        }
+    });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.project').forEach(p => {
+    p.style.opacity = '0';
+    p.style.transform = 'translateY(60px)';
+    p.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+    observer.observe(p);
+});
+
+// ==================== FLASHLIGHT CURSOR ====================
+const flashlight = document.getElementById('flashlight');
+const flashlightHard = document.getElementById('flashlightHard');
+let flX = 0, flY = 0, flSmX = 0, flSmY = 0;
+let flActive = false;
+
+document.addEventListener('mousemove', e => {
+    flX = e.clientX;
+    flY = e.clientY;
+    if (!flActive) {
+        flActive = true;
+        flashlight.classList.add('active');
+        flashlightHard.classList.add('active');
+    }
+});
+
+document.addEventListener('mouseleave', () => {
+    flActive = false;
+    flashlight.classList.remove('active');
+    flashlightHard.classList.remove('active');
+});
+
+// Lightable elements
+const litTargets = [
+    ...document.querySelectorAll('.project-header h2'),
+    ...document.querySelectorAll('.project-description'),
+    ...document.querySelectorAll('.carousel-slide'),
+    ...document.querySelectorAll('.carousel-controls button'),
+    ...document.querySelectorAll('.meta span'),
+    ...document.querySelectorAll('.about-portrait'),
+    ...document.querySelectorAll('.about-inner h2'),
+    ...document.querySelectorAll('.contact-links a'),
+    ...document.querySelectorAll('nav .nav-links a')
+];
+
+// BG chunks - handled separately for performance
+let bgChunks = [];
+function collectBgChunks() {
+    bgChunks = [...document.querySelectorAll('.bg-chunk')];
+}
+setTimeout(collectBgChunks, 1500);
+
+const LIGHT_RADIUS = 300;
+const BG_LIGHT_RADIUS = 250;
+let litSet = new Set();
+let litBgSet = new Set();
+
+function animateFlashlight() {
+    requestAnimationFrame(animateFlashlight);
+
+    // Smooth follow
+    flSmX += (flX - flSmX) * 0.15;
+    flSmY += (flY - flSmY) * 0.15;
+
+    flashlight.style.left = flSmX + 'px';
+    flashlight.style.top = flSmY + 'px';
+    flashlightHard.style.left = flSmX + 'px';
+    flashlightHard.style.top = flSmY + 'px';
+
+    // Light up nearby elements
+    for (const el of litTargets) {
+        const rect = el.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dist = Math.hypot(flSmX - cx, flSmY - cy);
+
+        if (dist < LIGHT_RADIUS) {
+            if (!litSet.has(el)) {
+                el.classList.add('lit');
+                litSet.add(el);
+            }
+        } else {
+            if (litSet.has(el)) {
+                el.classList.remove('lit');
+                litSet.delete(el);
+            }
+        }
+    }
+
+    // Light up bg chunks (throttled - check every 3rd frame)
+    if (bgChunks.length > 0 && Math.random() < 0.33) {
+        for (const chunk of bgChunks) {
+            const rect = chunk.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const dist = Math.hypot(flSmX - cx, flSmY - cy);
+
+            if (dist < BG_LIGHT_RADIUS) {
+                if (!litBgSet.has(chunk)) {
+                    chunk.classList.add('lit');
+                    litBgSet.add(chunk);
+                }
+            } else {
+                if (litBgSet.has(chunk)) {
+                    chunk.classList.remove('lit');
+                    litBgSet.delete(chunk);
+                }
+            }
+        }
+    }
+}
+animateFlashlight();
+</script>
+
+</body>
+</html>
