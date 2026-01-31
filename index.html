@@ -603,16 +603,19 @@
         @media (max-width: 768px) {
             nav { padding: 16px 20px; }
             nav .logo { width: 48px; height: 48px; margin: -8px 0; }
+            nav .nav-links a { margin-left: 20px; }
             .project { padding: var(--section-gap) 16px; min-height: auto; }
             .project-header h2 { font-size: clamp(1.8rem, 8vw, 2.5rem); }
             .project-header .meta { gap: 12px; }
             .project-description { font-size: 0.95rem; margin-bottom: 2rem; max-width: 100%; }
-            .carousel-wrapper { padding: 12px 0; overflow: hidden; }
-            .carousel-track { height: 52vw; max-height: 280px; perspective: 600px; }
-            .carousel-slide { max-width: 65vw; max-height: 240px; }
+            .carousel-wrapper { padding: 10px 0; }
+            .carousel-track { height: 70vw; max-height: 400px; }
+            .carousel-slide { max-width: 90vw; max-height: none; }
             .carousel-slide img {
-                max-width: 62vw;
-                max-height: 44vw;
+                max-width: 85vw;
+                max-height: 65vw;
+                width: auto;
+                height: auto;
                 object-fit: contain;
                 -webkit-mask-image: none;
                 mask-image: none;
