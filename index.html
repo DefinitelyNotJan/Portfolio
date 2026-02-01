@@ -360,7 +360,7 @@ function placeAlongCurve(urls,centerT,spread){
 const n=urls.length;urls.forEach((url,i)=>{
 const t=Math.max(.01,Math.min(.99,centerT-spread/2+(spread*i/(n-1||1))));
 const pt=curve.getPointAt(t),tn=curve.getTangentAt(t),nm=new THREE.Vector3(-tn.z,0,tn.x).normalize();
-const side=i%2===0?-1:1,dist=10+Math.random()*4,y=3+Math.random()*2;
+const side=i%2===0?-1:1,dist=M?5+Math.random()*2:7+Math.random()*3,y=3+Math.random()*2;
 const m=mkImg(url,[pt.x+nm.x*side*dist,y,pt.z+nm.z*side*dist]);
 m.userData.fO=Math.random()*6.28;m.userData.fS=.15+Math.random()*.25;m.userData.bY=y})}
 
