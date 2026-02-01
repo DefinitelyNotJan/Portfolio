@@ -7,7 +7,7 @@
 <style>
 @font-face { font-family:'Diatype Variable'; src:url('https://type.cargo.site/files/Cargo-DiatypePlusVariable.woff2') format('woff2'); font-weight:200 1000; font-display:swap; }
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#08081a;--text:rgba(255,255,255,.92);--text-60:rgba(255,255,255,.55);--text-40:rgba(255,255,255,.35);--text-25:rgba(255,255,255,.2);--accent:#c8965a;--accent-alt:#5e8aad}
+:root{--bg:#08081a;--text:rgba(255,255,255,.92);--text-60:rgba(255,255,255,.68);--text-40:rgba(255,255,255,.45);--text-25:rgba(255,255,255,.25);--accent:#c8965a;--accent-alt:#5e8aad}
 html{scroll-behavior:auto}
 body{font-family:'Diatype Variable',-apple-system,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased;cursor:none}
 #webgl{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
@@ -79,7 +79,7 @@ nav .nav-links a:hover{color:var(--text)}
 <div class="zone-text right" data-zone="brand"><span class="label">2019 – 2020</span><h2 data-scramble>Brand Leadership</h2><p>Lookbook design and art direction for Filling Pieces. Creative leadership at Valve. Then IKEA, <span class="highlight">art directing and designing a photography-led sustainability campaign</span> that helped preserve an old-growth forest. Global brand guidelines translated into locally resonant creative.</p></div>
 <div class="zone-text left" data-zone="scale"><span class="label">2021 – 2023 · Amsterdam</span><h2 data-scramble>Localized at Scale</h2><p>HelloFresh, <span class="highlight">leading a team of three</span> across brand, campaign, and performance creative. Rituals: <span class="highlight">art direction, campaign design, packaging, in-store visuals, and digital</span> for Hammam and Legend of the Dragon. Highest sales in the product's history. DHL, 12+ markets, 26 locations, 20% of targeted leads in month one.</p></div>
 <div class="zone-text right" data-zone="global"><span class="label">2024 – Present</span><h2 data-scramble>EMEA-Wide Design</h2><p>GLS Group. <span class="highlight">40+ countries.</span> Group-level design systems across Europe. Campaign design, print media, video production, and <span class="highlight">AI-assisted workflows</span>. Full creative spectrum from concept to delivery.</p><div class="tools">Figma · Photoshop · Illustrator · InDesign · After Effects · Premiere Pro · AI</div></div>
-<div class="cta-overlay" id="ctaOverlay" data-zone="cta"><img class="cta-portrait" src="https://freight.cargo.site/w/1000/i/I2251116696699520999765586088390/Jan-copy.jpg" alt="Jan Lönnqvist"><div class="cta-title" data-scramble>Let's Build</div><div class="cta-body">Production precision. Brand consistency. Multi-market localization.<br>The Netherlands.</div><div class="cta-links"><a href="mailto:jan.lonnqvist@windowslive.com" class="magnetic">jan.lonnqvist@windowslive.com</a><br><a href="tel:+31619584748" class="magnetic">+31 619 584 748</a></div></div>
+<div class="cta-overlay" id="ctaOverlay" data-zone="cta"><img class="cta-portrait" src="https://freight.cargo.site/w/1000/i/I2251116696699520999765586088390/Jan-copy.jpg" alt="Jan Lönnqvist"><div class="cta-title" data-scramble>Let's Build</div><div class="cta-body">Production precision. Brand consistency.<br>Multi-market localization. The Netherlands.</div><div class="cta-links"><a href="mailto:jan.lonnqvist@windowslive.com" class="magnetic">jan.lonnqvist@windowslive.com</a><br><a href="tel:+31619584748" class="magnetic">+31 619 584 748</a></div></div>
 <div class="zone-marker" id="zoneMarker"><span class="num">01</span><span id="zoneLabel">ENTER</span></div>
 <div class="scroll-hint" id="scrollHint"><span>↓ Drive</span></div>
 <div id="scroll-spacer"></div>
@@ -215,6 +215,10 @@ const moonTex1=radialTex(256,[
 [.5,'rgba(38,55,110,1)'],[.7,'rgba(22,35,80,1)'],[.88,'rgba(12,18,50,.7)'],[1,'rgba(8,8,30,0)']]);
 const moon1=new THREE.Sprite(new THREE.SpriteMaterial({map:moonTex1,transparent:true,depthWrite:false}));
 moon1.scale.set(60,60,1);moon1.position.set(-65,50,-220);scene.add(moon1);
+// Glow behind large moon
+const moon1GlowTex=radialTex(128,[[0,'rgba(70,100,180,0.18)'],[.25,'rgba(50,75,150,0.08)'],[.5,'rgba(30,50,120,0.03)'],[1,'rgba(0,0,0,0)']]);
+const moon1Glow=new THREE.Sprite(new THREE.SpriteMaterial({map:moon1GlowTex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
+moon1Glow.scale.set(110,110,1);moon1Glow.position.set(-65,50,-221);scene.add(moon1Glow);
 
 // Smaller moon — bright friendly orange
 const moonTex2=radialTex(128,[
@@ -222,6 +226,10 @@ const moonTex2=radialTex(128,[
 [.55,'rgba(180,105,35,1)'],[.75,'rgba(120,68,22,1)'],[.9,'rgba(50,28,12,.6)'],[1,'rgba(15,10,6,0)']]);
 const moon2=new THREE.Sprite(new THREE.SpriteMaterial({map:moonTex2,transparent:true,depthWrite:false}));
 moon2.scale.set(28,28,1);moon2.position.set(80,65,-350);scene.add(moon2);
+// Glow behind small moon
+const moon2GlowTex=radialTex(128,[[0,'rgba(255,180,60,0.15)'],[.25,'rgba(230,140,40,0.07)'],[.5,'rgba(180,100,20,0.02)'],[1,'rgba(0,0,0,0)']]);
+const moon2Glow=new THREE.Sprite(new THREE.SpriteMaterial({map:moon2GlowTex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
+moon2Glow.scale.set(55,55,1);moon2Glow.position.set(80,65,-351);scene.add(moon2Glow);
 
 /* ═══ ATMOSPHERE — layered volumetric haze ═══ */
 const hazeArr=[];
@@ -430,11 +438,13 @@ const ny=m.userData.bY+Math.sin(t*m.userData.fS+m.userData.fO)*.25;
 m.position.y=ny;
 if(m.userData.glow)m.userData.glow.position.copy(m.position)}});
 
-// Moons gentle drift
+// Moons gentle drift + glow follows
 moon1.position.y=50+Math.sin(t*.03)*2;
 moon1.position.x=-65+Math.sin(t*.02)*3;
+moon1Glow.position.x=moon1.position.x;moon1Glow.position.y=moon1.position.y;
 moon2.position.y=65+Math.sin(t*.04+1)*1.5;
 moon2.position.x=80+Math.cos(t*.025)*2;
+moon2Glow.position.x=moon2.position.x;moon2Glow.position.y=moon2.position.y;
 
 // Orbs float
 orbs.forEach(o=>{
