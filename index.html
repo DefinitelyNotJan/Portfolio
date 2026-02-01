@@ -184,10 +184,11 @@ gl_FragColor=vec4(col,a);}`};
 const canvas=document.getElementById('webgl');
 const R=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'high-performance'});
 R.setSize(innerWidth,innerHeight);R.setPixelRatio(Math.min(devicePixelRatio,2));R.setClearColor(0x08081a,1);
+R.toneMapping=THREE.NoToneMapping;R.outputColorSpace=THREE.SRGBColorSpace;
 const scene=new THREE.Scene();scene.fog=new THREE.FogExp2(0x08081a,.002);
 const cam=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,1000);cam.position.set(0,6,12);
 const comp=new EffectComposer(R);comp.addPass(new RenderPass(scene,cam));
-if(!M){const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.18,.4,.97);comp.addPass(bloom)}
+if(!M){const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.1,.3,.98);comp.addPass(bloom)}
 comp.addPass(new ShaderPass(PostFX));
 
 /* ═══ FLOOR ATMOSPHERE ═══ */
@@ -348,30 +349,11 @@ glow.scale.set(14,14,1);glow.position.copy(m.position);
 scene.add(glow);
 m.userData.glow=glow;
 
-const isGif=url.toLowerCase().endsWith('.gif');
-if(isGif){
-const img=new Image();img.crossOrigin='anonymous';
-img.onload=function(){
-const cv=document.createElement('canvas');cv.width=img.naturalWidth;cv.height=img.naturalHeight;
-const cx=cv.getContext('2d');cx.drawImage(img,0,0);
-const tex=new THREE.CanvasTexture(cv);tex.colorSpace=THREE.SRGBColorSpace;
-mat.map=tex;mat.needsUpdate=true;
-const a=img.naturalWidth/img.naturalHeight;let w,h;
-if(a>1){w=IMG_MAX;h=IMG_MAX/a}else{h=IMG_MAX;w=IMG_MAX*a}
-m.geometry.dispose();m.geometry=new THREE.PlaneGeometry(w,h);m.visible=true;
-glow.scale.set(w*1.8,h*1.8,1);
-m.userData.gifData={img,cv,cx,tex}};
-img.onerror=function(){TL.load(url,tex=>{tex.colorSpace=THREE.SRGBColorSpace;mat.map=tex;mat.needsUpdate=true;
+TL.load(url,tex=>{tex.colorSpace=THREE.SRGBColorSpace;mat.map=tex;mat.needsUpdate=true;
 const a=tex.image.width/tex.image.height;let w,h;
 if(a>1){w=IMG_MAX;h=IMG_MAX/a}else{h=IMG_MAX;w=IMG_MAX*a}
 m.geometry.dispose();m.geometry=new THREE.PlaneGeometry(w,h);m.visible=true;
-glow.scale.set(w*1.8,h*1.8,1)})};
-img.src=url}
-else{TL.load(url,tex=>{tex.colorSpace=THREE.SRGBColorSpace;mat.map=tex;mat.needsUpdate=true;
-const a=tex.image.width/tex.image.height;let w,h;
-if(a>1){w=IMG_MAX;h=IMG_MAX/a}else{h=IMG_MAX;w=IMG_MAX*a}
-m.geometry.dispose();m.geometry=new THREE.PlaneGeometry(w,h);m.visible=true;
-glow.scale.set(w*1.8,h*1.8,1)})}
+glow.scale.set(w*1.8,h*1.8,1)});
 return m}
 
 function placeAlongCurve(urls,centerT,spread){
@@ -402,10 +384,8 @@ placeAlongCurve([
 'https://freight.cargo.site/w/1500/i/D2235625176255971475004866826694/Screenshot-2023-11-08-at-18.17.01.png',
 'https://freight.cargo.site/w/1500/i/R2234070998554835639395359265222/DHL_CarouselV2_Artboard-1-copy-3.png',
 'https://freight.cargo.site/w/1500/i/U2234070998573282383469068816838/DHL_Localizations_Eindhoven_LinkedIn.jpg',
-'https://freight.cargo.site/w/1500/i/V2234070998610175871616487920070/DHL_SupplyChain_As_Brand_Animation2_1.gif',
-'https://freight.cargo.site/w/1500/i/P2234070998591729127542778368454/DHL_SupplyChain_As_Brand_Animation.gif',
 'https://freight.cargo.site/w/1500/i/Y2234046762244794163879839928774/Screenshot-2025-02-27-at-18.02.54.png',
-],.53,.08);
+],.53,.07);
 placeAlongCurve([
 'https://freight.cargo.site/w/1500/i/K2234040659526899002622588359110/LosAngeles1.png',
 'https://freight.cargo.site/w/1500/i/Q2234034005601844174850224951750/00042_1_HU_App_expresstask_Print_841x1189.png',
@@ -469,9 +449,8 @@ cam.position.y+=(tY+mny*-.3-cam.position.y)*.05;
 cam.position.z+=(cPt.z-cam.position.z)*.05;
 cam.lookAt(lPt.x+mnx*.3,tY-1,lPt.z);
 
-// Images float + billboard + glow follows + animated GIFs
+// Images float + billboard + glow follows
 imgs.forEach(m=>{
-if(m.userData.gifData){const g=m.userData.gifData;g.cx.drawImage(g.img,0,0);g.tex.needsUpdate=true}
 if(m.userData.bb)m.lookAt(cam.position);
 if(m.userData.fO!==undefined){
 const ny=m.userData.bY+Math.sin(t*m.userData.fS+m.userData.fO)*.25;
