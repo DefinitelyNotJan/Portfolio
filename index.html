@@ -157,8 +157,7 @@ float rnd(vec2 c){return fract(sin(dot(c,vec2(12.9898,78.233)))*43758.5453);}
 void main(){vec2 uv=vUv,d=uv-.5;float l=length(d),ab=.0012*l;
 float r=texture2D(tDiffuse,uv+d*ab).r,g=texture2D(tDiffuse,uv).g,b=texture2D(tDiffuse,uv-d*ab).b;
 vec3 c=vec3(r,g,b);
-c+=rnd(uv+fract(uTime))*.01-.005;
-c*=1.-l*l*.08;
+c+=rnd(uv+fract(uTime))*.008-.004;
 gl_FragColor=vec4(c,1.);}`};
 
 /* Ground fog shader — floor atmosphere */
@@ -185,7 +184,7 @@ gl_FragColor=vec4(col,a);}`};
 const canvas=document.getElementById('webgl');
 const R=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'high-performance'});
 R.setSize(innerWidth,innerHeight);R.setPixelRatio(Math.min(devicePixelRatio,2));R.setClearColor(0x08081a,1);
-const scene=new THREE.Scene();scene.fog=new THREE.FogExp2(0x08081a,.0025);
+const scene=new THREE.Scene();scene.fog=new THREE.FogExp2(0x08081a,.002);
 const cam=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,1000);cam.position.set(0,6,12);
 const comp=new EffectComposer(R);comp.addPass(new RenderPass(scene,cam));
 if(!M){const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.18,.4,.97);comp.addPass(bloom)}
@@ -351,8 +350,9 @@ m.userData.glow=glow;
 
 const isGif=url.toLowerCase().endsWith('.gif');
 if(isGif){
-// Animated GIF: draw <img> onto a canvas each frame to capture animation
-const img=new Image();img.crossOrigin='anonymous';img.src=url;
+// Animated GIF: load via DOM img (no crossOrigin to avoid CORS), redraw to canvas each frame
+const img=document.createElement('img');img.style.cssText='position:fixed;left:-9999px;top:0;visibility:hidden';
+img.src=url;document.body.appendChild(img);
 img.onload=function(){
 const cv=document.createElement('canvas');
 cv.width=img.naturalWidth;cv.height=img.naturalHeight;
@@ -422,7 +422,7 @@ l.position.set((Math.random()-.5)*80,Math.random()*30-3,-Math.random()*500);l.us
 
 /* ═══ FOG — shifts through deep space tones ═══ */
 const fogC=[new THREE.Color(0x08081a),new THREE.Color(0x0a0a20),new THREE.Color(0x0c081e),new THREE.Color(0x080c22),new THREE.Color(0x0a0a20),new THREE.Color(0x08081a)];
-const fogD=[.003,.0032,.003,.0025,.0025,.002];
+const fogD=[.002,.0022,.002,.0018,.0018,.0015];
 
 /* ═══ RESIZE ═══ */
 addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();R.setSize(innerWidth,innerHeight);comp.setSize(innerWidth,innerHeight);rTC()});
