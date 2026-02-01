@@ -336,7 +336,7 @@ const TL=new THREE.TextureLoader(),imgs=[];
 const IMG_MAX=7;
 
 function mkImg(url,pos){
-const mat=new THREE.MeshBasicMaterial({transparent:true,opacity:1,side:THREE.DoubleSide,depthWrite:false});
+const mat=new THREE.MeshBasicMaterial({transparent:true,opacity:1,side:THREE.DoubleSide,depthWrite:false,fog:false});
 const m=new THREE.Mesh(new THREE.PlaneGeometry(1,1),mat);
 m.position.set(pos[0],pos[1],pos[2]);m.userData.bb=true;m.visible=false;
 scene.add(m);imgs.push(m);
@@ -348,11 +348,30 @@ glow.scale.set(14,14,1);glow.position.copy(m.position);
 scene.add(glow);
 m.userData.glow=glow;
 
-TL.load(url,tex=>{tex.colorSpace=THREE.SRGBColorSpace;mat.map=tex;mat.needsUpdate=true;
+const isGif=url.toLowerCase().endsWith('.gif');
+if(isGif){
+const img=new Image();img.crossOrigin='anonymous';
+img.onload=function(){
+const cv=document.createElement('canvas');cv.width=img.naturalWidth;cv.height=img.naturalHeight;
+const cx=cv.getContext('2d');cx.drawImage(img,0,0);
+const tex=new THREE.CanvasTexture(cv);tex.colorSpace=THREE.SRGBColorSpace;
+mat.map=tex;mat.needsUpdate=true;
+const a=img.naturalWidth/img.naturalHeight;let w,h;
+if(a>1){w=IMG_MAX;h=IMG_MAX/a}else{h=IMG_MAX;w=IMG_MAX*a}
+m.geometry.dispose();m.geometry=new THREE.PlaneGeometry(w,h);m.visible=true;
+glow.scale.set(w*1.8,h*1.8,1);
+m.userData.gifData={img,cv,cx,tex}};
+img.onerror=function(){TL.load(url,tex=>{tex.colorSpace=THREE.SRGBColorSpace;mat.map=tex;mat.needsUpdate=true;
 const a=tex.image.width/tex.image.height;let w,h;
 if(a>1){w=IMG_MAX;h=IMG_MAX/a}else{h=IMG_MAX;w=IMG_MAX*a}
 m.geometry.dispose();m.geometry=new THREE.PlaneGeometry(w,h);m.visible=true;
-glow.scale.set(w*1.8,h*1.8,1)});
+glow.scale.set(w*1.8,h*1.8,1)})};
+img.src=url}
+else{TL.load(url,tex=>{tex.colorSpace=THREE.SRGBColorSpace;mat.map=tex;mat.needsUpdate=true;
+const a=tex.image.width/tex.image.height;let w,h;
+if(a>1){w=IMG_MAX;h=IMG_MAX/a}else{h=IMG_MAX;w=IMG_MAX*a}
+m.geometry.dispose();m.geometry=new THREE.PlaneGeometry(w,h);m.visible=true;
+glow.scale.set(w*1.8,h*1.8,1)})}
 return m}
 
 function placeAlongCurve(urls,centerT,spread){
@@ -450,8 +469,9 @@ cam.position.y+=(tY+mny*-.3-cam.position.y)*.05;
 cam.position.z+=(cPt.z-cam.position.z)*.05;
 cam.lookAt(lPt.x+mnx*.3,tY-1,lPt.z);
 
-// Images float + billboard + glow follows
+// Images float + billboard + glow follows + animated GIFs
 imgs.forEach(m=>{
+if(m.userData.gifData){const g=m.userData.gifData;g.cx.drawImage(g.img,0,0);g.tex.needsUpdate=true}
 if(m.userData.bb)m.lookAt(cam.position);
 if(m.userData.fO!==undefined){
 const ny=m.userData.bY+Math.sin(t*m.userData.fS+m.userData.fO)*.25;
