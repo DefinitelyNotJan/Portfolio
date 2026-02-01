@@ -216,10 +216,10 @@ const moonTex1=radialTex(256,[
 const moon1=new THREE.Sprite(new THREE.SpriteMaterial({map:moonTex1,transparent:true,depthWrite:false}));
 moon1.scale.set(60,60,1);moon1.position.set(-65,50,-220);scene.add(moon1);
 
-// Smaller moon — warm golden amber matching accent (#c8965a)
+// Smaller moon — bright friendly orange
 const moonTex2=radialTex(128,[
-[0,'rgba(220,170,100,1)'],[.15,'rgba(200,150,90,1)'],[.35,'rgba(175,128,75,1)'],
-[.55,'rgba(140,100,58,1)'],[.75,'rgba(90,62,35,1)'],[.9,'rgba(40,28,16,.6)'],[1,'rgba(12,10,8,0)']]);
+[0,'rgba(255,190,90,1)'],[.15,'rgba(245,170,70,1)'],[.35,'rgba(220,140,50,1)'],
+[.55,'rgba(180,105,35,1)'],[.75,'rgba(120,68,22,1)'],[.9,'rgba(50,28,12,.6)'],[1,'rgba(15,10,6,0)']]);
 const moon2=new THREE.Sprite(new THREE.SpriteMaterial({map:moonTex2,transparent:true,depthWrite:false}));
 moon2.scale.set(28,28,1);moon2.position.set(80,65,-350);scene.add(moon2);
 
@@ -389,7 +389,7 @@ l.position.set((Math.random()-.5)*80,Math.random()*30-3,-Math.random()*500);l.us
 
 /* ═══ FOG — shifts through deep space tones ═══ */
 const fogC=[new THREE.Color(0x08081a),new THREE.Color(0x0a0a20),new THREE.Color(0x0c081e),new THREE.Color(0x080c22),new THREE.Color(0x0a0a20),new THREE.Color(0x08081a)];
-const fogD=[.0035,.004,.0035,.003,.004,.0035];
+const fogD=[.0035,.004,.0035,.003,.003,.0025];
 
 /* ═══ RESIZE ═══ */
 addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();R.setSize(innerWidth,innerHeight);comp.setSize(innerWidth,innerHeight);rTC()});
