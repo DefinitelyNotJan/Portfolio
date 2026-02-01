@@ -1,1313 +1,480 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jan Lönnqvist — Designer</title>
-    <style>
-        @font-face {
-            font-family: 'Diatype Variable';
-            src: url('https://type.cargo.site/files/Cargo-DiatypePlusVariable.woff2') format('woff2');
-            font-weight: 200 1000;
-            font-style: normal;
-            font-display: swap;
-        }
-
-        @font-face {
-            font-family: 'Diatype Variable';
-            src: url('https://type.cargo.site/files/Cargo-DiatypePlusVariable-Italic.woff2') format('woff2');
-            font-weight: 200 1000;
-            font-style: italic;
-            font-display: swap;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        :root {
-            --bg: #000000;
-            --text: rgba(255, 255, 255, 0.92);
-            --text-75: rgba(255, 255, 255, 0.75);
-            --text-60: rgba(255, 255, 255, 0.55);
-            --text-40: rgba(255, 255, 255, 0.35);
-            --text-25: rgba(255, 255, 255, 0.20);
-            --text-10: rgba(255, 255, 255, 0.08);
-            --section-gap: 12vh;
-        }
-
-        html { scroll-behavior: smooth; }
-
-        body {
-            font-family: 'Diatype Variable', -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* ====== PARALLAX MARQUEE BACKGROUND ====== */
-        #marquee-bg {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 0;
-            pointer-events: none;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-evenly;
-        }
-
-        .bg-row {
-            white-space: nowrap;
-            overflow: visible;
-            line-height: 1.05;
-            will-change: transform;
-            font-size: clamp(2.5rem, 6vw, 5.5rem);
-            perspective: 800px;
-        }
-
-        .bg-row-inner {
-            display: inline-flex;
-            white-space: nowrap;
-            font-family: 'Diatype Variable', sans-serif;
-            font-weight: 700;
-            text-transform: uppercase;
-            will-change: transform;
-            font-variant-emoji: text;
-            transform-style: preserve-3d;
-        }
-
-        .bg-chunk {
-            display: inline-block;
-            white-space: nowrap;
-            will-change: transform, opacity;
-            backface-visibility: hidden;
-            color: transparent;
-            /* Layered silk: two gradients at different angles create
-               complex light-catching patterns like real fabric folds */
-            background:
-                repeating-linear-gradient(
-                    85deg,
-                    rgba(160, 170, 210, 0.3) 0%,
-                    rgba(200, 210, 250, 1.0) 3%,
-                    rgba(240, 242, 255, 1.0) 5%,
-                    rgba(200, 210, 250, 1.0) 7%,
-                    rgba(160, 170, 210, 0.3) 10%,
-                    rgba(150, 160, 200, 0.25) 18%,
-                    rgba(180, 195, 240, 0.85) 21%,
-                    rgba(230, 235, 255, 1.0) 23%,
-                    rgba(180, 195, 240, 0.85) 25%,
-                    rgba(150, 160, 200, 0.25) 28%,
-                    rgba(140, 150, 190, 0.2) 40%,
-                    rgba(190, 200, 240, 0.9) 43%,
-                    rgba(235, 238, 255, 1.0) 45%,
-                    rgba(190, 200, 240, 0.9) 47%,
-                    rgba(140, 150, 190, 0.2) 50%
-                ),
-                repeating-linear-gradient(
-                    95deg,
-                    rgba(160, 170, 210, 0.3) 0%,
-                    rgba(210, 218, 250, 0.8) 8%,
-                    rgba(160, 170, 210, 0.3) 16%,
-                    rgba(180, 190, 230, 0.6) 24%,
-                    rgba(160, 170, 210, 0.3) 32%
-                );
-            background-size: 900px 100%, 1400px 100%;
-            -webkit-background-clip: text;
-            background-clip: text;
-            opacity: 0.032;
-        }
-
-        .bg-chunk .globe {
-            display: inline-block;
-            font-size: 0.7em;
-            vertical-align: middle;
-            font-weight: 400;
-        }
-
-        .bg-divider {
-            display: none;
-        }
-
-        /* ====== FLASHLIGHT CURSOR ====== */
-        .flashlight {
-            position: fixed;
-            width: 500px;
-            height: 500px;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9998;
-            transform: translate(-50%, -50%);
-            background: radial-gradient(
-                circle,
-                rgba(220, 225, 255, 0.045) 0%,
-                rgba(200, 210, 255, 0.02) 25%,
-                rgba(180, 195, 240, 0.008) 45%,
-                transparent 70%
-            );
-            mix-blend-mode: screen;
-            transition: opacity 0.3s;
-            opacity: 0;
-        }
-        .flashlight.active { opacity: 1; }
-
-        .flashlight-hard {
-            position: fixed;
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9998;
-            transform: translate(-50%, -50%);
-            background: radial-gradient(
-                circle,
-                rgba(255, 255, 255, 0.025) 0%,
-                rgba(255, 255, 255, 0.01) 30%,
-                transparent 60%
-            );
-            mix-blend-mode: screen;
-            transition: opacity 0.3s;
-            opacity: 0;
-        }
-        .flashlight-hard.active { opacity: 1; }
-
-        /* Elements lit up by flashlight */
-        .project-header h2,
-        .about-inner h2,
-        .carousel-controls button,
-        nav .nav-links a,
-        .about-inner .contact-links a {
-            transition: text-shadow 0.4s, box-shadow 0.4s, color 0.4s;
-        }
-
-        .project-header h2.lit {
-            text-shadow: 0 0 40px rgba(200, 210, 255, 0.08), 0 0 80px rgba(200, 210, 255, 0.03);
-        }
-
-        .project-description.lit {
-            color: var(--text-60);
-            transition: color 0.4s;
-        }
-
-        .carousel-slide.lit img {
-            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7),
-                        0 0 30px rgba(200, 210, 255, 0.04),
-                        0 0 1px rgba(200, 210, 255, 0.12);
-            transition: box-shadow 0.4s;
-        }
-
-        .carousel-controls button.lit {
-            border-color: rgba(200, 210, 255, 0.1);
-            box-shadow: 0 0 15px rgba(200, 210, 255, 0.03);
-        }
-
-        .about-portrait.lit {
-            -webkit-mask-image: radial-gradient(ellipse 95% 95% at 50% 50%, black 65%, transparent 100%);
-            mask-image: radial-gradient(ellipse 95% 95% at 50% 50%, black 65%, transparent 100%);
-            transition: all 0.4s;
-        }
-
-        .bg-chunk.lit {
-            opacity: 0.06 !important;
-        }
-
-        .meta span.lit {
-            color: var(--text-50, rgba(255,255,255,0.45));
-            transition: color 0.4s;
-        }
-
-        .contact-links a.lit {
-            color: var(--text-60) !important;
-        }
-
-        /* ====== FILM GRAIN OVERLAY ====== */
-        #grain {
-            position: fixed;
-            top: -50%; left: -50%;
-            width: 200%; height: 200%;
-            z-index: 9999;
-            pointer-events: none;
-            opacity: 0.035;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-            background-size: 256px 256px;
-            mix-blend-mode: screen;
-        }
-
-        /* ====== SCROLLABLE CONTENT ====== */
-        #content {
-            position: relative;
-            z-index: 1;
-        }
-
-        /* ====== NAV ====== */
-        nav {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            z-index: 100;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 24px 40px;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            background: rgba(0, 0, 0, 0.4);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
-        nav .logo {
-            width: 64px;
-            height: 64px;
-            flex-shrink: 0;
-            margin: -12px 0;
-        }
-
-        nav .logo a {
-            display: block;
-            width: 100%;
-            height: 100%;
-            text-decoration: none;
-        }
-
-        nav .logo svg {
-            width: 100%;
-            height: 100%;
-            animation: logoSpin 8s linear infinite;
-        }
-
-        nav .logo svg text {
-            font-family: 'Diatype Variable', sans-serif;
-            font-size: 14px;
-            font-weight: 700;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            fill: var(--text-75);
-        }
-
-        @keyframes logoSpin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        nav .nav-links a {
-            font-size: 0.75rem;
-            font-weight: 400;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--text-40);
-            text-decoration: none;
-            margin-left: 32px;
-            transition: color 0.4s;
-        }
-
-        nav .nav-links a:hover { color: #fff; }
-
-        /* ====== HERO ====== */
-        .hero {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 0 24px;
-            position: relative;
-            z-index: 2;
-        }
-
-
-        .hero .scroll-hint {
-            position: absolute;
-            bottom: 40px;
-            font-size: 0.65rem;
-            font-weight: 400;
-            letter-spacing: 0.25em;
-            text-transform: uppercase;
-            color: var(--text-25);
-            animation: pulse 3s ease-in-out infinite;
-        }
-
-        .hero .scroll-hint::after {
-            content: '';
-            display: block;
-            width: 1px;
-            height: 32px;
-            background: linear-gradient(180deg, var(--text-25), transparent);
-            margin: 12px auto 0;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.2; }
-            50% { opacity: 0.5; }
-        }
-
-        /* ====== PROJECT SECTIONS ====== */
-        .project {
-            min-height: 100vh;
-            padding: var(--section-gap) 48px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            position: relative;
-            z-index: 2;
-        }
-
-        .project-header {
-            margin-bottom: 2.5rem;
-        }
-
-        .project-header h2 {
-            font-size: clamp(2.5rem, 6vw, 4.5rem);
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            text-transform: uppercase;
-            line-height: 1;
-            color: var(--text);
-        }
-
-        .project-header .meta {
-            margin-top: 1.2rem;
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .project-header .meta span {
-            font-size: 0.7rem;
-            font-weight: 400;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: var(--text-40);
-        }
-
-        .project-description {
-            max-width: 640px;
-            font-size: 1.05rem;
-            font-weight: 500;
-            line-height: 1.6;
-            color: var(--text-60);
-            margin-bottom: 3rem;
-        }
-
-        /* ====== IMAGE CAROUSEL (CSS 3D) ====== */
-        .carousel-wrapper {
-            width: 100%;
-            perspective: 1200px;
-            overflow: hidden;
-            padding: 40px 0;
-            position: relative;
-            z-index: 2;
-        }
-
-        .carousel-track {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            width: 100%;
-            height: 500px;
-            transform-style: preserve-3d;
-            cursor: grab;
-            user-select: none;
-            animation: carouselFloat 6s ease-in-out infinite;
-        }
-
-        @keyframes carouselFloat {
-            0%, 100% { transform: translateY(0px) rotateX(0deg); }
-            50% { transform: translateY(-10px) rotateX(0.5deg); }
-        }
-
-        .carousel-track.dragging {
-            cursor: grabbing;
-        }
-
-        .carousel-slide {
-            position: absolute;
-            max-width: 70vw;
-            max-height: 480px;
-            transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-                        opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-            pointer-events: none;
-        }
-
-        .carousel-track.dragging .carousel-slide {
-            transition: none;
-        }
-
-        .carousel-slide img {
-            max-width: 500px;
-            max-height: 480px;
-            width: auto;
-            height: auto;
-            object-fit: contain;
-            display: block;
-            border-radius: 2px;
-            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7),
-                        0 0 1px rgba(200, 210, 255, 0.1);
-            -webkit-user-drag: none;
-            user-select: none;
-            -webkit-mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 60%, transparent 100%);
-            mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 60%, transparent 100%);
-        }
-
-        .carousel-controls {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 16px;
-            margin-top: 2rem;
-        }
-
-        .carousel-controls button {
-            width: 40px;
-            height: 40px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            background: rgba(255, 255, 255, 0.02);
-            color: var(--text-60);
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 0;
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-        }
-
-        .carousel-controls button:hover {
-            background: rgba(255, 255, 255, 0.06);
-            border-color: rgba(200, 210, 255, 0.2);
-            color: #fff;
-            box-shadow: 0 0 20px rgba(200, 210, 255, 0.05);
-        }
-
-        .carousel-controls .counter {
-            font-size: 0.8rem;
-            font-weight: 400;
-            color: var(--text-40);
-            min-width: 60px;
-            text-align: center;
-        }
-
-        /* ====== SINGLE IMAGE LAYOUT ====== */
-        .image-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 16px;
-        }
-
-        .image-grid img {
-            width: 100%;
-            height: auto;
-            display: block;
-            border-radius: 8px;
-        }
-
-        /* ====== VIDEO EMBED ====== */
-        .video-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 800px;
-            padding-bottom: 56.25%;
-            margin: 0 auto;
-        }
-
-        .video-wrapper iframe {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            border: none;
-            border-radius: 8px;
-        }
-
-        /* ====== DIVIDER ====== */
-        .divider {
-            display: none;
-        }
-
-        /* (marquees removed — parallax background handles this) */
-
-        /* ====== ABOUT SECTION ====== */
-        .about-section {
-            min-height: 80vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: var(--section-gap) 48px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .about-inner {
-            max-width: 560px;
-        }
-
-        .about-portrait {
-            width: 100%;
-            max-width: 400px;
-            height: auto;
-            border-radius: 2px;
-            margin-bottom: 2.5rem;
-            -webkit-mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 60%, transparent 100%);
-            mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 60%, transparent 100%);
-        }
-
-        .about-inner h2 {
-            font-size: clamp(2.5rem, 5vw, 4rem);
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0em;
-            margin-bottom: 2rem;
-            color: var(--text);
-        }
-
-        .about-inner p {
-            font-size: 1.05rem;
-            line-height: 1.6;
-            font-weight: 500;
-            color: var(--text-60);
-            margin-bottom: 1.5rem;
-        }
-
-        .about-inner .contact-links {
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 1px solid var(--text-10);
-        }
-
-        .about-inner .contact-links a {
-            display: block;
-            color: var(--text-40);
-            text-decoration: none;
-            font-size: 0.95rem;
-            font-weight: 400;
-            margin-bottom: 0.6rem;
-            transition: color 0.3s;
-        }
-
-        .about-inner .contact-links a:hover { color: #fff; }
-
-        /* ====== FOOTER ====== */
-        footer {
-            padding: 30px 48px;
-            text-align: center;
-            font-size: 0.7rem;
-            font-weight: 400;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--text-25);
-            border-top: 1px solid rgba(255, 255, 255, 0.03);
-        }
-
-        /* ====== MOBILE ====== */
-        @media (max-width: 768px) {
-            nav { padding: 16px 20px; }
-            nav .logo { width: 48px; height: 48px; margin: -8px 0; }
-            nav .nav-links a { margin-left: 20px; }
-            .project { padding: var(--section-gap) 16px; min-height: auto; }
-            .project-header h2 { font-size: clamp(1.8rem, 8vw, 2.5rem); }
-            .project-header .meta { gap: 12px; }
-            .project-description { font-size: 0.95rem; margin-bottom: 2rem; max-width: 100%; }
-            .carousel-wrapper { padding: 10px 0; }
-            .carousel-track { height: 70vw; max-height: 400px; }
-            .carousel-slide { max-width: 90vw; max-height: none; }
-            .carousel-slide img {
-                max-width: 85vw;
-                max-height: 65vw;
-                width: auto;
-                height: auto;
-                object-fit: contain;
-                -webkit-mask-image: none;
-                mask-image: none;
-            }
-            .carousel-controls { margin-top: 0.8rem; }
-            .carousel-controls button { width: 36px; height: 36px; font-size: 0.75rem; }
-            .about-section { padding: var(--section-gap) 20px; min-height: auto; }
-            .about-portrait { max-width: 80vw; }
-            .about-inner h2 { font-size: clamp(1.8rem, 8vw, 2.5rem); }
-            footer { padding: 24px 20px; }
-            .bg-row { font-size: clamp(1.8rem, 5vw, 3rem); }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jan Lönnqvist | Graphic Designer</title>
+<style>
+@font-face { font-family:'Diatype Variable'; src:url('https://type.cargo.site/files/Cargo-DiatypePlusVariable.woff2') format('woff2'); font-weight:200 1000; font-display:swap; }
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#08081a;--text:rgba(255,255,255,.92);--text-60:rgba(255,255,255,.55);--text-40:rgba(255,255,255,.35);--text-25:rgba(255,255,255,.2);--accent:#c8965a;--accent-alt:#5e8aad}
+html{scroll-behavior:auto}
+body{font-family:'Diatype Variable',-apple-system,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased;cursor:none}
+#webgl{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
+#cursor-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none}
+.flashlight{position:fixed;width:600px;height:600px;border-radius:50%;pointer-events:none;z-index:2;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(200,150,90,.035) 0%,rgba(160,140,120,.012) 30%,transparent 70%);mix-blend-mode:screen;opacity:0;transition:opacity .5s}
+.flashlight.active{opacity:1}
+.custom-cursor{position:fixed;width:16px;height:16px;border-radius:50%;border:1.5px solid rgba(255,255,255,.5);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .3s,height .3s,border-color .3s,background .3s}
+.custom-cursor.hovering{width:48px;height:48px;border-color:var(--accent);background:rgba(255,255,255,.06)}
+#scroll-spacer{height:1000vh;position:relative;z-index:-1}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:20px 40px;pointer-events:auto}
+nav .logo{width:56px;height:56px;flex-shrink:0;margin:-8px 0}
+nav .logo svg{width:100%;height:100%;animation:logoSpin 12s linear infinite}
+nav .logo svg text{font-family:'Diatype Variable',sans-serif;font-size:14px;font-weight:700;letter-spacing:3px;text-transform:uppercase;fill:var(--text-25)}
+@keyframes logoSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+nav .nav-links a{font-size:.72rem;font-weight:400;letter-spacing:.12em;text-transform:uppercase;color:var(--text-40);text-decoration:none;margin-left:28px;transition:color .3s;cursor:none}
+nav .nav-links a:hover{color:var(--text)}
+.hero-overlay{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;justify-content:flex-end;padding:0 6vw 10vh;z-index:50;pointer-events:none;transition:opacity .6s}
+.hero-overlay.hidden{opacity:0}
+.hero-name{font-size:clamp(3rem,10vw,9rem);font-weight:800;line-height:.88;letter-spacing:-.05em;text-shadow:0 0 80px rgba(255,255,255,.06),0 4px 30px rgba(0,0,0,.6)}
+.hero-role{font-size:clamp(.7rem,1.2vw,1rem);font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-top:24px}
+.hero-team{font-size:clamp(.65rem,1vw,.85rem);font-weight:350;letter-spacing:.15em;text-transform:uppercase;color:var(--text-40);margin-top:6px}
+.zone-text{position:fixed;z-index:50;pointer-events:none;max-width:400px;opacity:0;transition:opacity .8s ease,transform .8s cubic-bezier(.16,1,.3,1)}
+.zone-text.left{left:5vw;top:50%;transform:translateY(-50%) translateX(-30px)}
+.zone-text.left.active{opacity:1;transform:translateY(-50%) translateX(0)}
+.zone-text.right{right:5vw;top:50%;transform:translateY(-50%) translateX(30px);text-align:right}
+.zone-text.right.active{opacity:1;transform:translateY(-50%) translateX(0)}
+.zone-text .label{font-weight:600;font-size:clamp(.6rem,.9vw,.72rem);letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;display:block}
+.zone-text h2{font-weight:700;font-size:clamp(1.4rem,3vw,2.2rem);letter-spacing:-.03em;line-height:1.1;margin-bottom:12px;text-shadow:0 2px 20px rgba(0,0,0,.9),0 0 40px rgba(0,0,0,.6)}
+.zone-text p{font-weight:350;font-size:clamp(.85rem,1.3vw,1rem);line-height:1.65;color:var(--text-60);text-shadow:0 2px 12px rgba(0,0,0,.9),0 0 30px rgba(0,0,0,.5)}
+.zone-text .highlight{color:var(--text);font-weight:500}
+.zone-text .tools{margin-top:14px;font-size:clamp(.7rem,1vw,.82rem);color:var(--text-40);letter-spacing:.05em;line-height:1.8;text-shadow:0 2px 12px rgba(0,0,0,.9)}
+.cta-overlay{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:50;pointer-events:none;opacity:0;transition:opacity .8s ease}
+.cta-overlay.active{opacity:1}
+.cta-portrait{width:140px;height:140px;border-radius:50%;object-fit:cover;margin-bottom:28px;box-shadow:0 0 60px rgba(200,150,90,.12),0 0 120px rgba(0,0,0,.5)}
+.cta-title{font-size:clamp(2rem,5vw,4rem);font-weight:700;letter-spacing:-.03em;text-align:center;text-shadow:0 2px 20px rgba(0,0,0,.8)}
+.cta-body{font-size:clamp(.85rem,1.2vw,1rem);color:var(--text-60);text-align:center;max-width:420px;margin-top:12px;line-height:1.6;text-shadow:0 2px 12px rgba(0,0,0,.9)}
+.cta-links{margin-top:20px;text-align:center;line-height:2.2;font-size:clamp(.85rem,1.2vw,1rem)}
+.cta-links a{color:var(--text);text-decoration:none;pointer-events:auto;cursor:none;border-bottom:1px solid var(--text-40);transition:border-color .3s}
+.cta-links a:hover{border-color:var(--text)}
+.zone-marker{position:fixed;z-index:45;right:40px;bottom:40px;font-size:.65rem;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--text-25);transition:opacity .5s}
+.zone-marker .num{color:var(--accent);margin-right:8px}
+.progress-bar{position:fixed;left:0;top:0;height:2px;z-index:101;background:var(--accent);width:0%;transition:width .1s linear}
+.scroll-hint{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);z-index:50;font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-40);opacity:1;transition:opacity .8s;pointer-events:none}
+.scroll-hint.hidden{opacity:0}
+.scroll-hint span{display:inline-block;animation:scrollBounce 2s ease-in-out infinite}
+@keyframes scrollBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+#loader{position:fixed;top:0;left:0;width:100%;height:100%;background:#08081a;z-index:200;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;transition:opacity 1.2s ease}
+#loader.done{opacity:0;pointer-events:none}
+#loader .bar{width:120px;height:2px;background:rgba(255,255,255,.06);overflow:hidden}
+#loader .bar-fill{width:0%;height:100%;background:var(--accent);transition:width .3s ease}
+#loader .loader-text{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text-25)}
+.magnetic{transition:transform .3s cubic-bezier(.16,1,.3,1)}
+@media(max-width:768px){body{cursor:auto}.custom-cursor,.flashlight,#cursor-canvas{display:none}nav{padding:14px 18px}.hero-overlay{padding:0 5vw 8vh}.hero-name{font-size:clamp(2.4rem,9vw,5rem)}.zone-text{max-width:80vw}.zone-text.left{left:5vw}.zone-text.right{right:5vw}.zone-marker{right:16px;bottom:16px}}
+</style>
 </head>
 <body>
-
-<!-- FLASHLIGHT -->
+<div id="loader"><div class="loader-text">Entering</div><div class="bar"><div class="bar-fill" id="loaderFill"></div></div></div>
+<div class="custom-cursor" id="customCursor"></div>
 <div class="flashlight" id="flashlight"></div>
-<div class="flashlight-hard" id="flashlightHard"></div>
-
-<!-- FILM GRAIN -->
-<div id="grain"></div>
-
-<!-- PARALLAX MARQUEE BACKGROUND -->
-<div id="marquee-bg">
-    <div class="bg-divider"></div>
-    <div class="bg-row" data-speed="-0.8"><div class="bg-row-inner"><span class="bg-row-segment">♥ EDUCATE ♥ LOVE → ELEVATE </span></div></div>
-    <div class="bg-divider"></div>
-    <div class="bg-row" data-speed="1.2"><div class="bg-row-inner"><span class="bg-row-segment">ANTIRACISM → QUEER RIGHTS → INTERSECTIONAL FEMINISM → SUSTAINABILITY → </span></div></div>
-    <div class="bg-divider"></div>
-    <div class="bg-row" data-speed="-1.5"><div class="bg-row-inner"><span class="bg-row-segment">BASKETBALL ⚡︎ POWERLIFTING ⚡︎ BOXING ⚡︎ </span></div></div>
-    <div class="bg-divider"></div>
-    <div class="bg-row" data-speed="0.6"><div class="bg-row-inner"><span class="bg-row-segment">JAN LÖNNQVIST ♥ ART DIRECTION ♥ GRAPHIC DESIGN ♥ CULTURE CURATION ♥ UX/UI DESIGN ♥ MOTION GRAPHICS ♥ PRINT PRODUCTION ♥ </span></div></div>
-    <div class="bg-divider"></div>
-    <div class="bg-row" data-speed="-1.4"><div class="bg-row-inner"><span class="bg-row-segment">LITERATURE ♥ PHOTOGRAPHY ♥ MUSIC ♥ 3D ANIMATION ♥ STAND-UP COMEDY ♥ </span></div></div>
-    <div class="bg-divider"></div>
-    <div class="bg-row" data-speed="1.8"><div class="bg-row-inner"><span class="bg-row-segment">HELSINKI <span class="globe">🌐︎</span> AMSTERDAM <span class="globe">🌐︎</span> SAN FRANCISCO <span class="globe">🌐︎</span> </span></div></div>
-    <div class="bg-divider"></div>
-    <div class="bg-row" data-speed="-0.5"><div class="bg-row-inner"><span class="bg-row-segment">FILLING PIECES ♥ RITUALS ♥ IKEA ♥ GLS ♥ DHL ♥ HELLO FRESH ♥ UPM ♥ HVO ♥ </span></div></div>
-    <div class="bg-divider"></div>
-    <div class="bg-row" data-speed="1.3"><div class="bg-row-inner"><span class="bg-row-segment">BRANDING → TYPOGRAPHY → LAYOUT DESIGN → STORYTELLING → FIGMA → ADOBE CC → </span></div></div>
-    <div class="bg-divider"></div>
-    <div class="bg-row" data-speed="-1.0"><div class="bg-row-inner"><span class="bg-row-segment">♥ LOVE → ELEVATE ♥ EDUCATE </span></div></div>
-    <div class="bg-divider"></div>
-</div>
-
-<!-- NAV -->
+<canvas id="webgl"></canvas>
+<canvas id="cursor-canvas"></canvas>
+<div class="progress-bar" id="progressBar"></div>
 <nav>
-    <div class="logo">
-        <a href="#about">
-            <svg viewBox="0 0 100 100">
-                <defs>
-                    <path id="circlePath" d="M 50,50 m -28,0 a 28,28 0 1,1 56,0 a 28,28 0 1,1 -56,0" fill="none"/>
-                </defs>
-                <text><textPath href="#circlePath">JAN LÖNNQVIST •</textPath></text>
-            </svg>
-        </a>
-    </div>
-    <div class="nav-links">
-        <a href="#work">Work</a>
-        <a href="#about">About</a>
-    </div>
+<div class="logo"><svg viewBox="0 0 100 100"><defs><path id="cp" d="M 50,50 m -28,0 a 28,28 0 1,1 56,0 a 28,28 0 1,1 -56,0" fill="none"/></defs><text><textPath href="#cp">JAN LÖNNQVIST •</textPath></text></svg></div>
+<div class="nav-links"><a href="#" class="magnetic" onclick="scrollToZone(0);return false">Start</a><a href="#" class="magnetic" onclick="scrollToZone(3);return false">Work</a><a href="#" class="magnetic" onclick="scrollToZone(5);return false">Contact</a></div>
 </nav>
-
-<!-- SCROLLABLE CONTENT -->
-<div id="content">
-
-    <!-- HERO -->
-    <section class="hero">
-        <div class="scroll-hint">Scroll</div>
-    </section>
-
-    <!-- ==================== PROJECTS ==================== -->
-    <div id="work">
-
-    <!-- FILLING PIECES -->
-    <section class="project" data-project>
-        <div class="project-header">
-            <h2>Filling Pieces</h2>
-            <div class="meta">
-                <span>Art Direction, Graphic Design</span>
-                <span>Adobe CC</span>
-                <span>AMS/NL</span>
-            </div>
-        </div>
-        <p class="project-description">Lookbook design for Filling Pieces' 'United by Generations' 2025 collection. I blended archival imagery and handwriting with contemporary design techniques to showcase the collection's fusion of past and present aesthetics.</p>
-        <div class="carousel-wrapper">
-            <div class="carousel-track" data-carousel>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/M2234023436410699934446659703238/JanLonnqvist_Lookbook_Page_01.jpg" alt="Lookbook Page 1"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/E2234023436429146678520369254854/JanLonnqvist_Lookbook_Page_02.jpg" alt="Lookbook Page 2"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/K2234023436447593422594078806470/JanLonnqvist_Lookbook_Page_04.jpg" alt="Lookbook Page 4"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Z2234023436466040166667788358086/JanLonnqvist_Lookbook_Page_05.jpg" alt="Lookbook Page 5"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/B2234023436484486910741497909702/JanLonnqvist_Lookbook_Page_07.jpg" alt="Lookbook Page 7"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/N2234023436502933654815207461318/JanLonnqvist_Lookbook_Page_08.jpg" alt="Lookbook Page 8"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/O2234023436521380398888917012934/JanLonnqvist_Lookbook_Page_09.jpg" alt="Lookbook Page 9"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/O2234023436539827142962626564550/JanLonnqvist_Lookbook_Page_10.jpg" alt="Lookbook Page 10"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/D2234023436558273887036336116166/JanLonnqvist_Lookbook_Page_12.jpg" alt="Lookbook Page 12"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/K2234023436576720631110045667782/JanLonnqvist_Lookbook_Page_13.jpg" alt="Lookbook Page 13"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/L2234023436595167375183755219398/JanLonnqvist_Lookbook_Page_15.jpg" alt="Lookbook Page 15"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/X2234023436613614119257464771014/JanLonnqvist_Lookbook_Page_16.jpg" alt="Lookbook Page 16"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/I2234023436632060863331174322630/JanLonnqvist_Lookbook_Page_17.jpg" alt="Lookbook Page 17"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/L2234023436650507607404883874246/JanLonnqvist_Lookbook_Page_18.jpg" alt="Lookbook Page 18"></div>
-            </div>
-            <div class="carousel-controls">
-                <button data-prev>&#8592;</button>
-                <span class="counter"><span data-index>01</span> / <span data-total>14</span></span>
-                <button data-next>&#8594;</button>
-            </div>
-        </div>
-    </section>
-
-    <div class="divider"></div>
-
-    <!-- RITUALS -->
-    <section class="project" data-project>
-        <div class="project-header">
-            <h2>Rituals</h2>
-            <div class="meta">
-                <span>Art Direction, Graphic Design, DTP</span>
-                <span>Adobe CC, Figma, AI</span>
-                <span>AMS/NL</span>
-            </div>
-        </div>
-        <p class="project-description">As Visual Specialist at Rituals, I led the design for the Ritual of Hammam campaign, which achieved the highest sales in the product's history. I worked on several major campaigns including Christmas Advent, Legend of the Dragon, and Better the Balance / promoting sustainability and supporting the Arhuaco tribe in Colombia. I also contributed to brand identity through design guidelines and the brand book.</p>
-        <div class="carousel-wrapper">
-            <div class="carousel-track" data-carousel>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/V2235624139622741508822904213958/Screenshot-2023-11-08-at-18.19.41.png" alt="Rituals"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/P2235736783835324132882917495238/Screenshot-2023-11-08-at-18.19.25.png" alt="Rituals"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/B2235624139604294764749194662342/Screenshot-2023-11-08-at-18.19.58.png" alt="Rituals"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/B2235621859752747950912000889286/20230926_165858.jpg" alt="Rituals"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/J2235621859844981671280548647366/20230926_165929.jpg" alt="Rituals"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/W2235629804931441194279267865030/20230926_170054.jpg" alt="Rituals"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/K2235621859900321903501677302214/-INT_0923011---SEPT23---Hammam---Hero-banner--270x250-.jpg" alt="Rituals Hammam"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/H2235621859881875159427967750598/Screenshot-2023-07-03-at-18.37.40.png" alt="Rituals"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/W2235621859863428415354258198982/INT_0923008---SEPT23---Hammam---Hammam-GWP---A5-148x208-V3.jpg" alt="Rituals Hammam"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/B2235625176163737754636319068614/20231005_172518.jpg" alt="Rituals"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/J2235625176034610546120352207302/20231005_163701.jpg" alt="Rituals"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/H2235631229112317405025200378310/MicrosoftTeams-image-50.png.jpeg" alt="Rituals"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Y2235627632974900467569241493958/-INT_1023207-OCT23-Legend-of-the-Dragon---WHS-Global-Themed-Table-Heroes-Highlighters-110x250.jpg" alt="Legend of the Dragon"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Z2235625176219077986857447723462/INT_1023202-OCT23-Legend-of-the-Dragon---WHS-Global-Themed-Table-Body-Scrub-140x325.jpg" alt="Legend of the Dragon"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Q2235625176182184498710028620230/dragon-cut.png" alt="Dragon"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/D2235625176255971475004866826694/Screenshot-2023-11-08-at-18.17.01.png" alt="Rituals"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Y2235625176311311707225995481542/Screenshot-2023-11-22-at-16.54.28.png" alt="Rituals"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/U2235625176292864963152285929926/Screenshot-2023-11-22-at-14.54.09.png" alt="Rituals"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Q2235637501300450371452102644166/INT_0923300-SEP23-Advent-2D-Giftset-Tower-flip-card-506x2852.jpeg" alt="Advent"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/U2235637501282003627378393092550/INT_0923301-SEP23-Advent-3D-Giftset-Tower-flip-card-506x2852.jpeg" alt="Advent"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Z2235637501263556883304683540934/INT_0923302-SEP23-Advent-Premium-Giftset-Tower-flip-card-506x2852.jpeg" alt="Advent"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/M2235637501245110139230973989318/20231005_172436.jpg" alt="Rituals"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/B2235637501115982930715007128006/20231005_172423.jpg" alt="Rituals"></div>
-            </div>
-            <div class="carousel-controls">
-                <button data-prev>&#8592;</button>
-                <span class="counter"><span data-index>01</span> / <span data-total>23</span></span>
-                <button data-next>&#8594;</button>
-            </div>
-        </div>
-    </section>
-
-    <div class="divider"></div>
-
-    <!-- IKEA -->
-    <section class="project" data-project>
-        <div class="project-header">
-            <h2>IKEA</h2>
-            <div class="meta">
-                <span>Art Direction, Photography, Editing, Graphic Design</span>
-                <span>Adobe CC</span>
-                <span>TUR/FI</span>
-            </div>
-        </div>
-        <p class="project-description">While working for IKEA, we partnered with local climate activists to save the Mälikkälä-Kuninkoja old-growth forest in Turku, Finland from urban development. I visited the forest to capture it through photography, then worked with copywriters to turn it into a campaign. The visuals helped save the forest and reinforced IKEA's commitment to sustainability.</p>
-        <div class="carousel-wrapper">
-            <div class="carousel-track" data-carousel>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/H2234067313577899242954199798214/priima3.jpg" alt="IKEA Forest"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/J2234067313541005754806780694982/Capture77777.PNG" alt="IKEA Campaign"></div>
-            </div>
-            <div class="carousel-controls">
-                <button data-prev>&#8592;</button>
-                <span class="counter"><span data-index>01</span> / <span data-total>02</span></span>
-                <button data-next>&#8594;</button>
-            </div>
-        </div>
-    </section>
-
-    <div class="divider"></div>
-
-    <!-- GLS -->
-    <section class="project" data-project>
-        <div class="project-header">
-            <h2>GLS</h2>
-            <div class="meta">
-                <span>Art Direction, Graphic Design, Logo Design, Video Editing</span>
-                <span>Adobe CC, Figma, AI</span>
-                <span>AMS/SF</span>
-            </div>
-        </div>
-        <p class="project-description">Graphic Designer at group level, handling art direction, logo design, iconography, infographics, typography, animation, video editing, and DTP. I collaborated with cross-functional teams across markets and led campaigns spanning print collaterals, expo stands, UI/UX design, and digital assets.</p>
-        <div class="carousel-wrapper">
-            <div class="carousel-track" data-carousel>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/K2234040659526899002622588359110/LosAngeles1.png" alt="GLS Los Angeles"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Q2234040659545345746696297910726/milan1.png" alt="GLS Milan"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/T2234040659471558770401459704262/barcelona1.png" alt="GLS Barcelona"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Q2234034005601844174850224951750/00042_1_HU_App_expresstask_Print_841x1189.png" alt="GLS Print"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/K2234032510382556536248809165254/00042_1_HU_App_expresstask_Print_95x200.png" alt="GLS Print"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Z2234032510401003280322518716870/00042_1_HU_App_expresstask_Print_841x336.png" alt="GLS Print"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/I2234042127371218435839029547462/carousels-02.png" alt="GLS Carousel"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/O2234032510437896768469937820102/00045_Net-Zero-visuals_Scope123-Recovered-06.png" alt="GLS Net Zero"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/U2234032510419450024396228268486/00045_Net-Zero-visuals_Scope123-Recovered-05.png" alt="GLS Net Zero"></div>
-            </div>
-            <div class="carousel-controls">
-                <button data-prev>&#8592;</button>
-                <span class="counter"><span data-index>01</span> / <span data-total>09</span></span>
-                <button data-next>&#8594;</button>
-            </div>
-        </div>
-    </section>
-
-    <div class="divider"></div>
-
-    <!-- DHL -->
-    <section class="project" data-project>
-        <div class="project-header">
-            <h2>DHL</h2>
-            <div class="meta">
-                <span>Team Leading, Graphic Design, DTP</span>
-                <span>Adobe CC, Figma, AI</span>
-                <span>AMS/NL</span>
-            </div>
-        </div>
-        <p class="project-description">Data-driven campaign design at agency level for DHL. We identified key demographics and built detailed personas that directed both the art direction and design process. From these personas I created the campaign visuals, then personally led the localisation to adapt content across multiple European markets. The result was a highly targeted, multi-region campaign that boosted DHL's recruitment efforts.</p>
-        <div class="carousel-wrapper">
-            <div class="carousel-track" data-carousel>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/R2234070998554835639395359265222/DHL_CarouselV2_Artboard-1-copy-3.png" alt="DHL Carousel"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/H2234070998536388895321649713606/DHL_CarouselV2_Artboard-1-copy-2.png" alt="DHL Carousel"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/U2234070998573282383469068816838/DHL_Localizations_Eindhoven_LinkedIn.jpg" alt="DHL Localization"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/V2234070998610175871616487920070/DHL_SupplyChain_As_Brand_Animation2_1.gif" alt="DHL Animation"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/P2234070998591729127542778368454/DHL_SupplyChain_As_Brand_Animation.gif" alt="DHL Animation"></div>
-            </div>
-            <div class="carousel-controls">
-                <button data-prev>&#8592;</button>
-                <span class="counter"><span data-index>01</span> / <span data-total>05</span></span>
-                <button data-next>&#8594;</button>
-            </div>
-        </div>
-    </section>
-
-    <div class="divider"></div>
-
-    <!-- HELLO FRESH -->
-    <section class="project" data-project>
-        <div class="project-header">
-            <h2>Hello Fresh</h2>
-            <div class="meta">
-                <span>Team Leading, Graphic Design, DTP</span>
-                <span>Adobe CC</span>
-                <span>AMS/NL</span>
-            </div>
-        </div>
-        <p class="project-description">Led a team of three creatives in design and DTP for recipe cards and brand collaborations at HelloFresh. I also designed recipe cards for Green Chef, one of HelloFresh's sub-brands, aligning the designs with Green Chef's focus on healthy, sustainable eating while keeping them visually engaging and easy to follow.</p>
-        <div class="carousel-wrapper">
-            <div class="carousel-track" data-carousel>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Y2234046762244794163879839928774/Screenshot-2025-02-27-at-18.02.54.png" alt="Hello Fresh"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/D2234046762263240907953549480390/Screenshot-2025-02-27-at-18.03.07.png" alt="Hello Fresh"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/P2234046762281687652027259032006/Screenshot-2025-02-27-at-18.03.20.png" alt="Hello Fresh"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/W2234046762300134396100968583622/Screenshot-2025-02-27-at-18.03.33.png" alt="Hello Fresh"></div>
-            </div>
-            <div class="carousel-controls">
-                <button data-prev>&#8592;</button>
-                <span class="counter"><span data-index>01</span> / <span data-total>04</span></span>
-                <button data-next>&#8594;</button>
-            </div>
-        </div>
-    </section>
-
-    <div class="divider"></div>
-
-    <!-- UPM -->
-    <section class="project" data-project>
-        <div class="project-header">
-            <h2>UPM</h2>
-            <div class="meta">
-                <span>Graphic Design, Package Design</span>
-                <span>Adobe CC</span>
-                <span>HEL/FI</span>
-            </div>
-        </div>
-        <p class="project-description">Flyers and paper package design for UPM, a leading Finnish forest industry company.</p>
-        <div class="carousel-wrapper">
-            <div class="carousel-track" data-carousel>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/T2235633688450684056056331375046/bioverno_EN.jpg" alt="UPM Bioverno"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/G2235633688432237311982621823430/Lignin_EN.jpg" alt="UPM Lignin"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/C2235633688413790567908912271814/profi_EN.jpg" alt="UPM Profi"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/F2235633688395343823835202720198/recognition_EN.jpg" alt="UPM Recognition"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/U2235633688303110103466654962118/powerhouse_EN.jpg" alt="UPM Powerhouse"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/H2235635051167009013202037903814/UPM_OPTI_wrapper_a3.jpg" alt="UPM Opti"></div>
-            </div>
-            <div class="carousel-controls">
-                <button data-prev>&#8592;</button>
-                <span class="counter"><span data-index>01</span> / <span data-total>06</span></span>
-                <button data-next>&#8594;</button>
-            </div>
-        </div>
-    </section>
-
-    <div class="divider"></div>
-
-    <!-- HVO -->
-    <section class="project" data-project>
-        <div class="project-header">
-            <h2>HVO</h2>
-            <div class="meta">
-                <span>Motion Design, Graphic Design</span>
-                <span>Adobe CC</span>
-                <span>AMS/NL</span>
-            </div>
-        </div>
-        <p class="project-description">Animated out-of-home digital screen campaigns for HVO.</p>
-        <div class="carousel-wrapper">
-            <div class="carousel-track" data-carousel>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/M2235640263847949362047133553094/HVO_Herstelcampaign_animation_1.gif" alt="HVO Animation 1"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/R2235640263829502617973424001478/HVO_Herstelcampaign_animation_2.gif" alt="HVO Animation 2"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/A2235640263811055873899714449862/HVO_Herstelcampaign_animation_3.gif" alt="HVO Animation 3"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/U2235640263792609129826004898246/HVO_Herstelcampaign_animation_4.gif" alt="HVO Animation 4"></div>
-                <div class="carousel-slide"><img src="https://freight.cargo.site/w/1500/i/Q2235640263755715641678585795014/HVO_Herstelcampaign_animation_5.gif" alt="HVO Animation 5"></div>
-            </div>
-            <div class="carousel-controls">
-                <button data-prev>&#8592;</button>
-                <span class="counter"><span data-index>01</span> / <span data-total>05</span></span>
-                <button data-next>&#8594;</button>
-            </div>
-        </div>
-    </section>
-
-    <div class="divider"></div>
-
-    <!-- AI -->
-    <section class="project" data-project>
-        <div class="project-header">
-            <h2>AI</h2>
-            <div class="meta">
-                <span>Art Direction, Graphic Design, Video Editing, Motion Design</span>
-                <span>Adobe CC, AI</span>
-                <span>AMS/NL</span>
-            </div>
-        </div>
-        <p class="project-description">Projects created with AI. Back to School social media ad for GLS / all of the models in the video are AI generated.</p>
-        <div class="video-wrapper">
-            <iframe src="https://player.vimeo.com/video/1114624551?h=050d618a27" allowfullscreen></iframe>
-        </div>
-    </section>
-
-    </div><!-- /work -->
-
-    <!-- ABOUT -->
-    <section class="about-section" id="about">
-        <div class="about-inner">
-            <img class="about-portrait" src="https://freight.cargo.site/w/1000/i/I2251116696699520999765586088390/Jan-copy.jpg" alt="Jan Lönnqvist">
-            <h2>Jan</h2>
-            <p>I'm Jan, 31, from Finland, based in the Netherlands. I've spent 8+ years working across agencies, brands, and studios / from DTP and print production to art direction and multi-market campaign design for companies like Rituals, DHL, HelloFresh, IKEA, and GLS.</p>
-            <p>Outside of work I train powerlifting and boxing. My interests include photography, writing, reading, and learning saxophone.</p>
-            <div class="contact-links">
-                <a href="tel:+31619584748">+31 619 584 748</a>
-                <a href="mailto:jan.lonnqvist@windowslive.com">jan.lonnqvist@windowslive.com</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- FOOTER -->
-    <footer>Jan Lönnqvist / Love, Educate, Elevate</footer>
-
-</div><!-- /content -->
-
-<script>
-// ==================== PARALLAX MARQUEE BACKGROUND ====================
-const bgRows = document.querySelectorAll('.bg-row');
-let smoothScroll = 0;
-let targetScroll = 0;
-let bgReady = false;
-
-// Wait for fonts to load before measuring and creating chunks
-document.fonts.ready.then(() => {
-    bgRows.forEach((row, ri) => {
-        const inner = row.querySelector('.bg-row-inner');
-        const segment = inner.querySelector('.bg-row-segment');
-        if (!segment) return;
-
-        // Measure one segment width accurately after font load
-        const segW = segment.getBoundingClientRect().width;
-        const segText = segment.innerHTML;
-
-        // Create individual chunk elements for 3D ribbon positioning
-        const copies = 30;
-        let html = '';
-        for (let i = 0; i < copies; i++) {
-            html += `<span class="bg-chunk" data-ci="${i}">${segText}</span>`;
-        }
-        inner.innerHTML = html;
-
-        // Store data for animation
-        inner._segW = segW;
-        inner._chunks = inner.querySelectorAll('.bg-chunk');
-    });
-    bgReady = true;
-});
-
-window.addEventListener('scroll', () => {
-    targetScroll = window.scrollY;
-});
-
-function animateBackground() {
-    requestAnimationFrame(animateBackground);
-    if (!bgReady) return;
-
-    smoothScroll += (targetScroll - smoothScroll) * 0.08;
-
-    bgRows.forEach((row, ri) => {
-        const speed = parseFloat(row.dataset.speed);
-        const inner = row.querySelector('.bg-row-inner');
-        const segW = inner._segW;
-        const chunks = inner._chunks;
-        if (!segW || segW < 1 || !chunks) return;
-
-        // Horizontal scroll with wrapping
-        let xOffset = smoothScroll * speed;
-        xOffset = ((xOffset % segW) + segW) % segW;
-        inner.style.transform = `translateX(${xOffset - segW * 10}px)`;
-
-        // Ribbon: each chunk undulates in Z-depth
-        const waveFreq = 1.2;
-        const waveAmp = 250;
-        const scrollPhaseSpeed = 0.008;
-        const direction = speed > 0 ? 1 : -1;
-
-        for (let ci = 0; ci < chunks.length; ci++) {
-            const phase = ci * waveFreq + smoothScroll * scrollPhaseSpeed * direction + ri * 1.5;
-            const z = Math.sin(phase) * waveAmp;
-
-            const normalizedZ = (z + waveAmp) / (waveAmp * 2);
-            const sx = 0.4 + normalizedZ * 0.6;
-
-            // Opacity: deeper = dimmer, closer = brighter
-            // Add a second wave for silk shimmer variation
-            const shimmer = Math.sin(phase * 2.5 + ri * 3.1) * 0.008;
-            const op = 0.028 + normalizedZ * 0.025 + shimmer;
-
-            chunks[ci].style.transform = `translateZ(${z}px) scaleX(${sx})`;
-            chunks[ci].style.opacity = op;
-
-            // Two gradient layers flowing at different speeds + directions
-            const dir = ri % 2 === 0 ? 1 : -1;
-            const silk1 = ci * 90 + smoothScroll * dir * 0.6;
-            const silk2 = ci * 140 + smoothScroll * dir * -0.35;
-            chunks[ci].style.backgroundPosition = `${silk1}px 0, ${silk2}px 0`;
-        }
-    });
-}
-animateBackground();
-
-// ==================== 3D CAROUSELS ====================
-document.querySelectorAll('[data-carousel]').forEach(track => {
-    const slides = Array.from(track.querySelectorAll('.carousel-slide'));
-    const wrapper = track.closest('.carousel-wrapper');
-    const prevBtn = wrapper.querySelector('[data-prev]');
-    const nextBtn = wrapper.querySelector('[data-next]');
-    const indexEl = wrapper.querySelector('[data-index]');
-    const total = slides.length;
-    let current = 0;
-    let isAnimating = false;
-
-    function update() {
-        const isMobile = window.innerWidth <= 768;
-        const spacing = isMobile ? Math.min(160, window.innerWidth * 0.4) : 350;
-        const depth = isMobile ? 80 : 180;
-        const rot = isMobile ? 12 : 20;
-
-        slides.forEach((slide, i) => {
-            // Calculate shortest offset for wrapping
-            let offset = i - current;
-            if (offset > total / 2) offset -= total;
-            if (offset < -total / 2) offset += total;
-            const absOffset = Math.abs(offset);
-
-            // 3D positioning
-            const translateX = offset * spacing;
-            const translateZ = -absOffset * depth;
-            const rotateY = -offset * rot;
-            const maxVisible = isMobile ? 2 : 3;
-            const opacity = absOffset > maxVisible ? 0 : Math.max(0, 1 - absOffset * (isMobile ? 0.45 : 0.35));
-            const scale = isMobile ? Math.max(0.65, 1 - absOffset * 0.18) : Math.max(0.6, 1 - absOffset * 0.12);
-
-            slide.style.transform = `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`;
-            slide.style.opacity = opacity;
-            slide.style.zIndex = 100 - absOffset;
-        });
-
-        if (indexEl) indexEl.textContent = String(current + 1).padStart(2, '0');
-    }
-
-    function goNext() {
-        current = (current + 1) % total;
-        update();
-    }
-
-    function goPrev() {
-        current = (current - 1 + total) % total;
-        update();
-    }
-
-    if (prevBtn) prevBtn.addEventListener('click', goPrev);
-    if (nextBtn) nextBtn.addEventListener('click', goNext);
-
-    // Touch swipe
-    let touchStartX = 0;
-    let touchStartTime = 0;
-    track.addEventListener('touchstart', e => {
-        touchStartX = e.touches[0].clientX;
-        touchStartTime = Date.now();
-    }, { passive: true });
-    track.addEventListener('touchend', e => {
-        const diff = touchStartX - e.changedTouches[0].clientX;
-        const elapsed = Date.now() - touchStartTime;
-        // Swipe if moved >40px or fast flick
-        if (Math.abs(diff) > 40 || (Math.abs(diff) > 20 && elapsed < 300)) {
-            if (diff > 0) goNext();
-            else goPrev();
-        }
-    }, { passive: true });
-
-    // Mouse drag swipe
-    let dragStartX = 0;
-    let isDragging = false;
-    let dragStartTime = 0;
-
-    track.addEventListener('mousedown', e => {
-        isDragging = true;
-        dragStartX = e.clientX;
-        dragStartTime = Date.now();
-        track.classList.add('dragging');
-        e.preventDefault();
-    });
-
-    window.addEventListener('mousemove', e => {
-        if (!isDragging) return;
-        // Visual feedback could go here
-    });
-
-    window.addEventListener('mouseup', e => {
-        if (!isDragging) return;
-        isDragging = false;
-        track.classList.remove('dragging');
-        const diff = dragStartX - e.clientX;
-        const elapsed = Date.now() - dragStartTime;
-        if (Math.abs(diff) > 40 || (Math.abs(diff) > 20 && elapsed < 300)) {
-            if (diff > 0) goNext();
-            else goPrev();
-        }
-    });
-
-    // Mouse wheel on carousel (horizontal scroll = navigate)
-    wrapper.addEventListener('wheel', e => {
-        // Use horizontal scroll or vertical if no horizontal
-        const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-        if (Math.abs(delta) > 30) {
-            e.preventDefault();
-            if (delta > 0) goNext();
-            else goPrev();
-        }
-    }, { passive: false });
-
-    update();
-});
-
-// ==================== SCROLL REVEAL ====================
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
-        }
-    });
-}, { threshold: 0.1 });
-
-document.querySelectorAll('.project').forEach(p => {
-    p.style.opacity = '0';
-    p.style.transform = 'translateY(60px)';
-    p.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
-    observer.observe(p);
-});
-
-// ==================== FLASHLIGHT CURSOR ====================
-const flashlight = document.getElementById('flashlight');
-const flashlightHard = document.getElementById('flashlightHard');
-let flX = 0, flY = 0, flSmX = 0, flSmY = 0;
-let flActive = false;
-
-document.addEventListener('mousemove', e => {
-    flX = e.clientX;
-    flY = e.clientY;
-    if (!flActive) {
-        flActive = true;
-        flashlight.classList.add('active');
-        flashlightHard.classList.add('active');
-    }
-});
-
-document.addEventListener('mouseleave', () => {
-    flActive = false;
-    flashlight.classList.remove('active');
-    flashlightHard.classList.remove('active');
-});
-
-// Lightable elements
-const litTargets = [
-    ...document.querySelectorAll('.project-header h2'),
-    ...document.querySelectorAll('.project-description'),
-    ...document.querySelectorAll('.carousel-slide'),
-    ...document.querySelectorAll('.carousel-controls button'),
-    ...document.querySelectorAll('.meta span'),
-    ...document.querySelectorAll('.about-portrait'),
-    ...document.querySelectorAll('.about-inner h2'),
-    ...document.querySelectorAll('.contact-links a'),
-    ...document.querySelectorAll('nav .nav-links a')
-];
-
-// BG chunks - handled separately for performance
-let bgChunks = [];
-function collectBgChunks() {
-    bgChunks = [...document.querySelectorAll('.bg-chunk')];
-}
-setTimeout(collectBgChunks, 1500);
-
-const LIGHT_RADIUS = 300;
-const BG_LIGHT_RADIUS = 250;
-let litSet = new Set();
-let litBgSet = new Set();
-
-function animateFlashlight() {
-    requestAnimationFrame(animateFlashlight);
-
-    // Smooth follow
-    flSmX += (flX - flSmX) * 0.15;
-    flSmY += (flY - flSmY) * 0.15;
-
-    flashlight.style.left = flSmX + 'px';
-    flashlight.style.top = flSmY + 'px';
-    flashlightHard.style.left = flSmX + 'px';
-    flashlightHard.style.top = flSmY + 'px';
-
-    // Light up nearby elements
-    for (const el of litTargets) {
-        const rect = el.getBoundingClientRect();
-        const cx = rect.left + rect.width / 2;
-        const cy = rect.top + rect.height / 2;
-        const dist = Math.hypot(flSmX - cx, flSmY - cy);
-
-        if (dist < LIGHT_RADIUS) {
-            if (!litSet.has(el)) {
-                el.classList.add('lit');
-                litSet.add(el);
-            }
-        } else {
-            if (litSet.has(el)) {
-                el.classList.remove('lit');
-                litSet.delete(el);
-            }
-        }
-    }
-
-    // Light up bg chunks (throttled - check every 3rd frame)
-    if (bgChunks.length > 0 && Math.random() < 0.33) {
-        for (const chunk of bgChunks) {
-            const rect = chunk.getBoundingClientRect();
-            const cx = rect.left + rect.width / 2;
-            const cy = rect.top + rect.height / 2;
-            const dist = Math.hypot(flSmX - cx, flSmY - cy);
-
-            if (dist < BG_LIGHT_RADIUS) {
-                if (!litBgSet.has(chunk)) {
-                    chunk.classList.add('lit');
-                    litBgSet.add(chunk);
-                }
-            } else {
-                if (litBgSet.has(chunk)) {
-                    chunk.classList.remove('lit');
-                    litBgSet.delete(chunk);
-                }
-            }
-        }
-    }
-}
-animateFlashlight();
+<div class="hero-overlay" id="heroOverlay"><div class="hero-name" data-scramble>JAN<br>LÖNNQVIST</div><div class="hero-role">Graphic Designer</div><div class="hero-team">Brand · Print · Digital · Multi-Market</div></div>
+<div class="zone-text left" data-zone="production"><span class="label">2013 – 2018 · Helsinki</span><h2 data-scramble>Production Precision</h2><p>Graphic design across print and digital. Brand identities, campaign materials, corporate communications. Five years at Multiprint, Lönnberg, Cocomms, Pixmill, and Planex. <span class="highlight">Prepress, offset printing, colour management, production pipelines.</span> The physical precision that underpins everything.</p></div>
+<div class="zone-text right" data-zone="brand"><span class="label">2019 – 2020</span><h2 data-scramble>Brand Leadership</h2><p>Lookbook design and art direction for Filling Pieces. Creative leadership at Valve. Then IKEA, <span class="highlight">art directing and designing a photography-led sustainability campaign</span> that helped preserve an old-growth forest. Global brand guidelines translated into locally resonant creative.</p></div>
+<div class="zone-text left" data-zone="scale"><span class="label">2021 – 2023 · Amsterdam</span><h2 data-scramble>Localized at Scale</h2><p>HelloFresh, <span class="highlight">leading a team of three</span> across brand, campaign, and performance creative. Rituals: <span class="highlight">art direction, campaign design, packaging, in-store visuals, and digital</span> for Hammam and Legend of the Dragon. Highest sales in the product's history. DHL, 12+ markets, 26 locations, 20% of targeted leads in month one.</p></div>
+<div class="zone-text right" data-zone="global"><span class="label">2024 – Present</span><h2 data-scramble>EMEA-Wide Design</h2><p>GLS Group. <span class="highlight">40+ countries.</span> Group-level design systems across Europe. Campaign design, print media, video production, and <span class="highlight">AI-assisted workflows</span>. Full creative spectrum from concept to delivery.</p><div class="tools">Figma · Photoshop · Illustrator · InDesign · After Effects · Premiere Pro · AI</div></div>
+<div class="cta-overlay" id="ctaOverlay" data-zone="cta"><img class="cta-portrait" src="https://freight.cargo.site/w/1000/i/I2251116696699520999765586088390/Jan-copy.jpg" alt="Jan Lönnqvist"><div class="cta-title" data-scramble>Let's Build</div><div class="cta-body">Production precision. Brand consistency. Multi-market localization.<br>The Netherlands.</div><div class="cta-links"><a href="mailto:jan.lonnqvist@windowslive.com" class="magnetic">jan.lonnqvist@windowslive.com</a><br><a href="tel:+31619584748" class="magnetic">+31 619 584 748</a></div></div>
+<div class="zone-marker" id="zoneMarker"><span class="num">01</span><span id="zoneLabel">ENTER</span></div>
+<div class="scroll-hint" id="scrollHint"><span>↓ Drive</span></div>
+<div id="scroll-spacer"></div>
+
+<script type="importmap">
+{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}
 </script>
+<script type="module">
+import*as THREE from'three';
+import{EffectComposer}from'three/addons/postprocessing/EffectComposer.js';
+import{RenderPass}from'three/addons/postprocessing/RenderPass.js';
+import{UnrealBloomPass}from'three/addons/postprocessing/UnrealBloomPass.js';
+import{ShaderPass}from'three/addons/postprocessing/ShaderPass.js';
 
+const M=/Mobi|Android/i.test(navigator.userAgent)||window.innerWidth<768;
+
+/* ═══ CURSOR ═══ */
+const cursorEl=document.getElementById('customCursor'),flashEl=document.getElementById('flashlight');
+const tC=document.getElementById('cursor-canvas'),tCtx=tC.getContext('2d');
+let mx=-100,my=-100,smx=-100,smy=-100,mVx=0,mVy=0,pmx=-100,pmy=-100;
+const trail=[];
+function rTC(){tC.width=innerWidth;tC.height=innerHeight}rTC();
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;mVx=mx-pmx;mVy=my-pmy;pmx=mx;pmy=my;if(!flashEl.classList.contains('active'))flashEl.classList.add('active')});
+document.addEventListener('mouseleave',()=>flashEl.classList.remove('active'));
+document.querySelectorAll('.magnetic').forEach(el=>{
+el.addEventListener('mouseenter',()=>cursorEl.classList.add('hovering'));
+el.addEventListener('mouseleave',()=>{cursorEl.classList.remove('hovering');el.style.transform=''});
+el.addEventListener('mousemove',e=>{const r=el.getBoundingClientRect();el.style.transform=`translate(${(e.clientX-r.left-r.width/2)*.25}px,${(e.clientY-r.top-r.height/2)*.25}px)`});
+});
+function animCursor(){requestAnimationFrame(animCursor);smx+=(mx-smx)*.15;smy+=(my-smy)*.15;
+cursorEl.style.left=smx+'px';cursorEl.style.top=smy+'px';flashEl.style.left=smx+'px';flashEl.style.top=smy+'px';
+const sp=Math.sqrt(mVx*mVx+mVy*mVy);trail.unshift({x:smx,y:smy,s:Math.min(sp,30)});if(trail.length>40)trail.pop();
+tCtx.clearRect(0,0,tC.width,tC.height);if(trail.length>2){tCtx.beginPath();tCtx.moveTo(trail[0].x,trail[0].y);
+for(let i=1;i<trail.length;i++){const p=trail[i],v=trail[i-1];tCtx.quadraticCurveTo(v.x,v.y,(v.x+p.x)/2,(v.y+p.y)/2)}
+const g=tCtx.createLinearGradient(trail[0].x,trail[0].y,trail[trail.length-1].x,trail[trail.length-1].y);
+g.addColorStop(0,`rgba(200,150,90,${Math.min(sp*.01,.3)})`);g.addColorStop(.5,`rgba(255,255,255,${Math.min(sp*.005,.1)})`);g.addColorStop(1,'rgba(255,255,255,0)');
+tCtx.strokeStyle=g;tCtx.lineWidth=1.5+sp*.08;tCtx.lineCap='round';tCtx.stroke()}}
+if(!M)animCursor();
+
+/* ═══ TEXT SCRAMBLE ═══ */
+const CH='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&';
+function scramble(el){const o=el.textContent,c=o.split('');let f=0;(function t(){const p=f/25,r=Math.floor(p*c.length);let s='';for(let i=0;i<c.length;i++){if(c[i]===' '||c[i]==='\n'){s+=c[i];continue}s+=i<r?c[i]:CH[Math.floor(Math.random()*CH.length)]}el.textContent=s;f++;f<=25?requestAnimationFrame(t):el.textContent=o})()}
+
+/* ═══ SCROLL ═══ */
+let sP=0,sV=0,lSY=0;
+const sHint=document.getElementById('scrollHint'),pBar=document.getElementById('progressBar'),heroOv=document.getElementById('heroOverlay');
+function gSP(){const d=document.documentElement.scrollHeight-innerHeight;return d<=0?0:Math.max(0,Math.min(1,scrollY/d))}
+addEventListener('scroll',()=>{const sy=scrollY;sV=(sy-lSY)*.01;lSY=sy;sP=gSP();sHint.classList.toggle('hidden',sP>.03);pBar.style.width=(sP*100)+'%';heroOv.classList.toggle('hidden',sP>.08)},{passive:true});
+window.scrollToZone=function(i){const t=[0,.12,.30,.50,.70,.88];const d=document.documentElement.scrollHeight-innerHeight;scrollTo({top:(t[i]||0)*d,behavior:'smooth'})};
+
+/* ═══ ZONES ═══ */
+const zTexts=document.querySelectorAll('.zone-text'),ctaOv=document.getElementById('ctaOverlay');
+const zMN=document.querySelector('.zone-marker .num'),zL=document.getElementById('zoneLabel'),scr=new Set();
+const zones=[{n:'hero',l:'ENTER',s:0,e:.10},{n:'production',l:'PRODUCTION',s:.10,e:.27},{n:'brand',l:'BRAND',s:.27,e:.44},{n:'scale',l:'SCALE',s:.44,e:.62},{n:'global',l:'GLOBAL',s:.62,e:.80},{n:'cta',l:'CONTACT',s:.80,e:1}];
+function updZ(){let cur=zones[0];for(const z of zones)if(sP>=z.s&&sP<z.e){cur=z;break}if(sP>=zones[5].s)cur=zones[5];
+zTexts.forEach(p=>{const a=p.dataset.zone===cur.n,w=p.classList.contains('active');p.classList.toggle('active',a);if(a&&!w)p.querySelectorAll('[data-scramble]').forEach(e=>{if(!scr.has(e)){scr.add(e);scramble(e)}})});
+const ca=cur.n==='cta',cw=ctaOv.classList.contains('active');ctaOv.classList.toggle('active',ca);if(ca&&!cw)ctaOv.querySelectorAll('[data-scramble]').forEach(e=>{if(!scr.has(e)){scr.add(e);scramble(e)}});
+if(cur.n==='hero')heroOv.querySelectorAll('[data-scramble]').forEach(e=>{if(!scr.has(e)){scr.add(e);scramble(e)}});
+const idx=zones.indexOf(cur)+1;if(zMN)zMN.textContent=String(idx).padStart(2,'0');if(zL)zL.textContent=cur.l}
+
+/* ═══ SHADERS ═══ */
+const PostFX={uniforms:{tDiffuse:{value:null},uTime:{value:0}},
+vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+fragmentShader:`uniform sampler2D tDiffuse;uniform float uTime;varying vec2 vUv;
+float rnd(vec2 c){return fract(sin(dot(c,vec2(12.9898,78.233)))*43758.5453);}
+void main(){vec2 uv=vUv,d=uv-.5;float l=length(d),ab=.0012*l;
+float r=texture2D(tDiffuse,uv+d*ab).r,g=texture2D(tDiffuse,uv).g,b=texture2D(tDiffuse,uv-d*ab).b;
+vec3 c=vec3(r,g,b);
+c+=rnd(uv+fract(uTime))*.01-.005;
+c*=1.-l*l*.12;
+gl_FragColor=vec4(c,1.);}`};
+
+/* Ground fog shader — floor atmosphere */
+const FloorSh={
+vertexShader:`varying vec3 vW;void main(){vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}`,
+fragmentShader:`uniform float uTime,uScroll;varying vec3 vW;
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
+float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<4;i++){v+=a*noise(p);p*=2.;a*=.5;}return v;}
+void main(){
+float z=vW.z+uScroll*150.,x=vW.x;
+vec2 p=vec2(x*.04,z*.04);
+float n=fbm(p+uTime*.015)+fbm(p*2.-uTime*.01)*.4;
+float dist=length(vec2(x,vW.z+250.));
+float fade=1.-smoothstep(30.,180.,dist);
+float center=exp(-x*x*.003);
+vec3 col=mix(vec3(.04,.04,.10),vec3(.08,.07,.14),n);
+col=mix(col,vec3(.14,.10,.06),n*n*center*.4);
+float a=n*.1*fade+center*.03;
+gl_FragColor=vec4(col,a);}`};
+
+/* ═══ THREE SETUP ═══ */
+const canvas=document.getElementById('webgl');
+const R=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'high-performance'});
+R.setSize(innerWidth,innerHeight);R.setPixelRatio(Math.min(devicePixelRatio,2));R.setClearColor(0x08081a,1);
+const scene=new THREE.Scene();scene.fog=new THREE.FogExp2(0x08081a,.0035);
+const cam=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,1000);cam.position.set(0,6,12);
+const comp=new EffectComposer(R);comp.addPass(new RenderPass(scene,cam));
+if(!M){const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.18,.4,.97);comp.addPass(bloom)}
+comp.addPass(new ShaderPass(PostFX));
+
+/* ═══ FLOOR ATMOSPHERE ═══ */
+const floorMat=new THREE.ShaderMaterial({vertexShader:FloorSh.vertexShader,fragmentShader:FloorSh.fragmentShader,
+uniforms:{uTime:{value:0},uScroll:{value:0}},transparent:true,side:THREE.DoubleSide,depthWrite:false});
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(400,700,1,1),floorMat);
+floor.rotation.x=-Math.PI/2;floor.position.set(0,-3,-250);scene.add(floor);
+
+/* ═══ CURVED ROAD ═══ */
+const curve=new THREE.CatmullRomCurve3([
+new THREE.Vector3(0,-2,10),new THREE.Vector3(0,-2,-25),
+new THREE.Vector3(-18,-2,-65),new THREE.Vector3(-22,-2,-95),
+new THREE.Vector3(-8,-2,-125),new THREE.Vector3(16,-2,-165),
+new THREE.Vector3(22,-2,-195),new THREE.Vector3(8,-2,-225),
+new THREE.Vector3(-16,-2,-265),new THREE.Vector3(-20,-2,-295),
+new THREE.Vector3(-5,-2,-325),new THREE.Vector3(14,-2,-365),
+new THREE.Vector3(18,-2,-395),new THREE.Vector3(5,-2,-425),
+new THREE.Vector3(0,-2,-460),new THREE.Vector3(0,-2,-490)
+],false,'catmullrom',.3);
+
+/* ═══ HELPER: radial gradient canvas texture ═══ */
+function radialTex(sz,stops){
+const cv=document.createElement('canvas');cv.width=sz;cv.height=sz;
+const ctx=cv.getContext('2d'),g=ctx.createRadialGradient(sz/2,sz/2,0,sz/2,sz/2,sz/2);
+stops.forEach(s=>g.addColorStop(s[0],s[1]));
+ctx.fillStyle=g;ctx.fillRect(0,0,sz,sz);
+return new THREE.CanvasTexture(cv)}
+
+/* ═══ CELESTIAL BODIES — two moons ═══ */
+// Large moon — deep sapphire blue with indigo core
+const moonTex1=radialTex(256,[
+[0,'rgba(90,115,170,1)'],[.12,'rgba(75,100,160,1)'],[.3,'rgba(55,78,140,1)'],
+[.5,'rgba(38,55,110,1)'],[.7,'rgba(22,35,80,1)'],[.88,'rgba(12,18,50,.7)'],[1,'rgba(8,8,30,0)']]);
+const moon1=new THREE.Sprite(new THREE.SpriteMaterial({map:moonTex1,transparent:true,depthWrite:false}));
+moon1.scale.set(60,60,1);moon1.position.set(-65,50,-220);scene.add(moon1);
+
+// Smaller moon — warm golden amber matching accent (#c8965a)
+const moonTex2=radialTex(128,[
+[0,'rgba(220,170,100,1)'],[.15,'rgba(200,150,90,1)'],[.35,'rgba(175,128,75,1)'],
+[.55,'rgba(140,100,58,1)'],[.75,'rgba(90,62,35,1)'],[.9,'rgba(40,28,16,.6)'],[1,'rgba(12,10,8,0)']]);
+const moon2=new THREE.Sprite(new THREE.SpriteMaterial({map:moonTex2,transparent:true,depthWrite:false}));
+moon2.scale.set(28,28,1);moon2.position.set(80,65,-350);scene.add(moon2);
+
+/* ═══ ATMOSPHERE — layered volumetric haze ═══ */
+const hazeArr=[];
+const hazeDefs=[
+// Deep blue atmospheric layers — the foundation of depth
+{c:[20,28,65],a:.25,x:-30,y:15,z:-80,s:100},
+{c:[18,25,55],a:.2,x:40,y:20,z:-170,s:120},
+{c:[22,30,60],a:.18,x:-20,y:25,z:-280,s:110},
+{c:[15,22,50],a:.22,x:30,y:10,z:-380,s:90},
+{c:[20,25,55],a:.15,x:-40,y:30,z:-450,s:100},
+// Purple-violet nebula tones
+{c:[45,22,60],a:.1,x:-55,y:40,z:-140,s:130},
+{c:[40,18,55],a:.08,x:60,y:45,z:-300,s:110},
+{c:[50,25,65],a:.07,x:-45,y:50,z:-400,s:100},
+// Warm amber light shafts — the soul of the scene
+{c:[120,80,30],a:.06,x:50,y:40,z:-200,s:70},
+{c:[100,65,20],a:.05,x:-60,y:50,z:-320,s:80},
+{c:[90,60,25],a:.04,x:40,y:55,z:-420,s:60},
+// Low warm ground glow
+{c:[80,55,25],a:.06,x:0,y:-8,z:-120,s:130},
+{c:[60,45,20],a:.05,x:0,y:-8,z:-300,s:120},
+{c:[70,50,22],a:.04,x:0,y:-8,z:-430,s:100},
+];
+hazeDefs.forEach(h=>{
+const tex=radialTex(128,[[0,`rgba(${h.c[0]},${h.c[1]},${h.c[2]},${h.a})`],
+[.3,`rgba(${h.c[0]},${h.c[1]},${h.c[2]},${h.a*.35})`],
+[.6,`rgba(${h.c[0]},${h.c[1]},${h.c[2]},${h.a*.08})`],[1,'rgba(0,0,0,0)']]);
+const mat=new THREE.SpriteMaterial({map:tex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false});
+const sp=new THREE.Sprite(mat);sp.scale.set(h.s,h.s,1);sp.position.set(h.x,h.y,h.z);
+sp.userData={bX:h.x,bY:h.y,ph:Math.random()*6.28,sp:.003+Math.random()*.006};
+scene.add(sp);hazeArr.push(sp)});
+
+/* ═══ STAR FIELD — dense, multi-layered ═══ */
+const PC=M?800:4000,pG=new THREE.BufferGeometry(),pP=new Float32Array(PC*3),pC=new Float32Array(PC*3),pS=new Float32Array(PC);
+for(let i=0;i<PC;i++){
+pP[i*3]=(Math.random()-.5)*150;pP[i*3+1]=Math.random()*70-10;pP[i*3+2]=-Math.random()*550;
+// Mostly cool blue-white, some warm
+const warm=Math.random()<.15;
+if(warm){pC[i*3]=1;pC[i*3+1]=.82+Math.random()*.1;pC[i*3+2]=.55+Math.random()*.2}
+else{const b=.6+Math.random()*.4;pC[i*3]=b*.9;pC[i*3+1]=b*.92;pC[i*3+2]=b}
+pS[i]=M?.04+Math.random()*.04:.02+Math.random()*.04}
+pG.setAttribute('position',new THREE.BufferAttribute(pP,3));
+pG.setAttribute('color',new THREE.BufferAttribute(pC,3));
+pG.setAttribute('size',new THREE.BufferAttribute(pS,1));
+scene.add(new THREE.Points(pG,new THREE.PointsMaterial({size:M?.05:.035,transparent:true,opacity:.55,vertexColors:true,sizeAttenuation:true,blending:THREE.AdditiveBlending,depthWrite:false})));
+
+/* ═══ LUMINOUS ORBS — floating light motes ═══ */
+const orbGeo=new THREE.SphereGeometry(.06,8,8),orbs=[];
+const orbPalette=[
+[200,150,90,.35],[94,138,173,.3],[160,140,190,.25],[255,230,200,.2],
+[180,160,120,.3],[120,160,200,.25],[200,170,130,.3],[150,180,210,.2]];
+for(let i=0;i<(M?25:55);i++){
+const c=orbPalette[Math.floor(Math.random()*orbPalette.length)];
+const col=new THREE.Color(c[0]/255,c[1]/255,c[2]/255);
+const o=new THREE.Mesh(orbGeo,new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:c[3]}));
+o.position.set((Math.random()-.5)*70,Math.random()*40-3,-Math.random()*500);
+const sc=.4+Math.random()*2;o.scale.setScalar(sc);
+o.userData={bY:o.position.y,ph:Math.random()*6.28,sp:.12+Math.random()*.35,bX:o.position.x};
+scene.add(o);orbs.push(o)}
+
+/* ═══ DISTANT SPACE WAR ═══ */
+const shipGeo=new THREE.ConeGeometry(.15,.5,4);shipGeo.rotateX(Math.PI/2);
+const ships=[];
+function mkShip(f){
+const col=f==='b'?0x5e8aad:0xc8965a;
+const m=new THREE.Mesh(shipGeo,new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.5}));
+const side=Math.random()<.5?-1:1;
+m.position.set(side*(30+Math.random()*40),12+Math.random()*30,-Math.random()*480);
+m.userData={f,bP:m.position.clone(),oR:4+Math.random()*10,oS:.1+Math.random()*.25,oPh:Math.random()*6.28};
+scene.add(m);ships.push(m)}
+for(let i=0;i<(M?5:14);i++){mkShip('b');mkShip('r')}
+
+const capGeo=new THREE.BoxGeometry(2.2,.6,6),capEdge=new THREE.EdgesGeometry(capGeo),caps=[];
+[[-50,28,-130,'b'],[55,32,-290,'r'],[-45,24,-430,'b'],[60,30,-160,'r']].forEach(d=>{
+const l=new THREE.LineSegments(capEdge,new THREE.LineBasicMaterial({color:d[3]==='b'?0x5e8aad:0xc8965a,transparent:true,opacity:.12}));
+l.position.set(d[0],d[1],d[2]);l.scale.setScalar(2.5);l.userData={rS:.015+Math.random()*.02,bP:new THREE.Vector3(d[0],d[1],d[2])};
+scene.add(l);caps.push(l);
+// Engine glow
+const gl=new THREE.Mesh(new THREE.SphereGeometry(.35,8,8),new THREE.MeshBasicMaterial({color:d[3]==='b'?0x5e8aad:0xc8965a,transparent:true,opacity:.25}));
+gl.position.set(d[0],d[1],d[2]+4);scene.add(gl)});
+
+const lasers=[],explosions=[];let lastLT=0;
+function fireLaser(){const bs=ships.filter(s=>s.userData.f==='b'),rs=ships.filter(s=>s.userData.f==='r');
+if(!bs.length||!rs.length)return;const isB=Math.random()<.5;
+const sh=isB?bs[Math.floor(Math.random()*bs.length)]:rs[Math.floor(Math.random()*rs.length)];
+const tg=isB?rs[Math.floor(Math.random()*rs.length)]:bs[Math.floor(Math.random()*bs.length)];
+const g=new THREE.BufferGeometry().setFromPoints([sh.position.clone(),tg.position.clone()]);
+const l=new THREE.Line(g,new THREE.LineBasicMaterial({color:isB?0x7eb8dd:0xdda86a,transparent:true,opacity:.7}));
+l.userData={life:.3,ml:.3,ep:tg.position.clone()};scene.add(l);lasers.push(l)}
+function boom(pos){const m=new THREE.Mesh(new THREE.SphereGeometry(.25,8,8),
+new THREE.MeshBasicMaterial({color:0xffeedd,transparent:true,opacity:.9}));
+m.position.copy(pos);m.userData={life:.5,ml:.5};scene.add(m);explosions.push(m)}
+
+/* ═══ IMAGES — floating luminous panels ═══ */
+const TL=new THREE.TextureLoader(),imgs=[];
+const IMG_MAX=7;
+
+function mkImg(url,pos){
+const mat=new THREE.MeshBasicMaterial({transparent:true,opacity:1,side:THREE.DoubleSide,depthWrite:false});
+const m=new THREE.Mesh(new THREE.PlaneGeometry(1,1),mat);
+m.position.set(pos[0],pos[1],pos[2]);m.userData.bb=true;m.visible=false;
+scene.add(m);imgs.push(m);
+
+// Soft light glow behind image — makes it feel like it's emitting light
+const glowTex=radialTex(64,[[0,'rgba(200,150,90,0.08)'],[.3,'rgba(150,130,100,0.03)'],[.7,'rgba(80,80,120,0.01)'],[1,'rgba(0,0,0,0)']]);
+const glow=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
+glow.scale.set(14,14,1);glow.position.copy(m.position);
+scene.add(glow);
+m.userData.glow=glow;
+
+TL.load(url,tex=>{tex.colorSpace=THREE.SRGBColorSpace;mat.map=tex;mat.needsUpdate=true;
+const a=tex.image.width/tex.image.height;let w,h;
+if(a>1){w=IMG_MAX;h=IMG_MAX/a}else{h=IMG_MAX;w=IMG_MAX*a}
+m.geometry.dispose();m.geometry=new THREE.PlaneGeometry(w,h);m.visible=true;
+// Scale glow to match image size
+glow.scale.set(w*1.8,h*1.8,1)});
+return m}
+
+function placeAlongCurve(urls,centerT,spread){
+const n=urls.length;urls.forEach((url,i)=>{
+const t=Math.max(.01,Math.min(.99,centerT-spread/2+(spread*i/(n-1||1))));
+const pt=curve.getPointAt(t),tn=curve.getTangentAt(t),nm=new THREE.Vector3(-tn.z,0,tn.x).normalize();
+const side=i%2===0?-1:1,dist=10+Math.random()*4,y=3+Math.random()*2;
+const m=mkImg(url,[pt.x+nm.x*side*dist,y,pt.z+nm.z*side*dist]);
+m.userData.fO=Math.random()*6.28;m.userData.fS=.15+Math.random()*.25;m.userData.bY=y})}
+
+placeAlongCurve([
+'https://freight.cargo.site/w/1500/i/T2235633688450684056056331375046/bioverno_EN.jpg',
+'https://freight.cargo.site/w/1500/i/G2235633688432237311982621823430/Lignin_EN.jpg',
+'https://freight.cargo.site/w/1500/i/C2235633688413790567908912271814/profi_EN.jpg',
+'https://freight.cargo.site/w/1500/i/F2235633688395343823835202720198/recognition_EN.jpg',
+'https://freight.cargo.site/w/1500/i/H2235635051167009013202037903814/UPM_OPTI_wrapper_a3.jpg',
+],.18,.06);
+placeAlongCurve([
+'https://freight.cargo.site/w/1500/i/M2234023436410699934446659703238/JanLonnqvist_Lookbook_Page_01.jpg',
+'https://freight.cargo.site/w/1500/i/E2234023436429146678520369254854/JanLonnqvist_Lookbook_Page_02.jpg',
+'https://freight.cargo.site/w/1500/i/K2234023436447593422594078806470/JanLonnqvist_Lookbook_Page_04.jpg',
+'https://freight.cargo.site/w/1500/i/H2234067313577899242954199798214/priima3.jpg',
+'https://freight.cargo.site/w/1500/i/J2234067313541005754806780694982/Capture77777.PNG',
+],.35,.06);
+placeAlongCurve([
+'https://freight.cargo.site/w/1500/i/V2235624139622741508822904213958/Screenshot-2023-11-08-at-18.19.41.png',
+'https://freight.cargo.site/w/1500/i/B2235621859752747950912000889286/20230926_165858.jpg',
+'https://freight.cargo.site/w/1500/i/D2235625176255971475004866826694/Screenshot-2023-11-08-at-18.17.01.png',
+'https://freight.cargo.site/w/1500/i/R2234070998554835639395359265222/DHL_CarouselV2_Artboard-1-copy-3.png',
+'https://freight.cargo.site/w/1500/i/U2234070998573282383469068816838/DHL_Localizations_Eindhoven_LinkedIn.jpg',
+'https://freight.cargo.site/w/1500/i/Y2234046762244794163879839928774/Screenshot-2025-02-27-at-18.02.54.png',
+],.53,.07);
+placeAlongCurve([
+'https://freight.cargo.site/w/1500/i/K2234040659526899002622588359110/LosAngeles1.png',
+'https://freight.cargo.site/w/1500/i/Q2234034005601844174850224951750/00042_1_HU_App_expresstask_Print_841x1189.png',
+'https://freight.cargo.site/w/1500/i/Z2234032510401003280322518716870/00042_1_HU_App_expresstask_Print_841x336.png',
+'https://freight.cargo.site/w/1500/i/I2234042127371218435839029547462/carousels-02.png',
+'https://freight.cargo.site/w/1500/i/O2234032510437896768469937820102/00045_Net-Zero-visuals_Scope123-Recovered-06.png',
+],.71,.06);
+
+/* ═══ LIGHT STREAKS — fine directional lines ═══ */
+const stG=new THREE.Group();scene.add(stG);
+for(let i=0;i<50;i++){const len=3+Math.random()*15;
+const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0),new THREE.Vector3(0,0,-len)]);
+const warm=Math.random()<.3;
+const col=warm?new THREE.Color(.7,.5,.25):new THREE.Color(.35+Math.random()*.2,.38+Math.random()*.2,.5+Math.random()*.2);
+const l=new THREE.Line(g,new THREE.LineBasicMaterial({color:col,transparent:true,opacity:.015+Math.random()*.025}));
+l.position.set((Math.random()-.5)*80,Math.random()*30-3,-Math.random()*500);l.userData={sp:.2+Math.random()*.8,bX:l.position.x};stG.add(l)}
+
+/* ═══ FOG — shifts through deep space tones ═══ */
+const fogC=[new THREE.Color(0x08081a),new THREE.Color(0x0a0a20),new THREE.Color(0x0c081e),new THREE.Color(0x080c22),new THREE.Color(0x0a0a20),new THREE.Color(0x08081a)];
+const fogD=[.0035,.004,.0035,.003,.004,.0035];
+
+/* ═══ RESIZE ═══ */
+addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();R.setSize(innerWidth,innerHeight);comp.setSize(innerWidth,innerHeight);rTC()});
+
+/* ═══ LOADER ═══ */
+const loaderEl=document.getElementById('loader'),loaderFill=document.getElementById('loaderFill');let lP=0;
+
+/* ═══ RENDER LOOP ═══ */
+const clock=new THREE.Clock();
+function animate(){requestAnimationFrame(animate);const dt=clock.getDelta(),t=clock.getElapsedTime();
+
+// Loader
+if(lP<100){lP=Math.min(100,lP+dt*70);loaderFill.style.width=lP+'%';if(lP>=100)loaderEl.classList.add('done')}
+
+// Floor shader
+floorMat.uniforms.uTime.value=t;floorMat.uniforms.uScroll.value=sP;
+
+// Fog interpolation
+const zi=Math.min(5,Math.floor(sP*5.5)),ni=Math.min(5,zi+1),zf=(sP*5.5-zi)%1;
+scene.fog.color.lerp(new THREE.Color().lerpColors(fogC[zi],fogC[ni],zf),.03);
+R.setClearColor(scene.fog.color,1);
+scene.fog.density+=(fogD[zi]+(fogD[ni]-fogD[zi])*zf-scene.fog.density)*.03;
+
+// Camera
+const ct=Math.max(0,Math.min(.999,sP)),cPt=curve.getPointAt(ct),lPt=curve.getPointAt(Math.min(ct+.04,.999));
+const mnx=M?0:(mx/innerWidth-.5)*2,mny=M?0:(my/innerHeight-.5)*2;
+const tY=cPt.y+6;
+cam.position.x+=(cPt.x+mnx*2-cam.position.x)*.05;
+cam.position.y+=(tY+mny*-.3-cam.position.y)*.05;
+cam.position.z+=(cPt.z-cam.position.z)*.05;
+cam.lookAt(lPt.x+mnx*.3,tY-1,lPt.z);
+
+// Images float + billboard + glow follows
+imgs.forEach(m=>{
+if(m.userData.bb)m.lookAt(cam.position);
+if(m.userData.fO!==undefined){
+const ny=m.userData.bY+Math.sin(t*m.userData.fS+m.userData.fO)*.25;
+m.position.y=ny;
+if(m.userData.glow)m.userData.glow.position.copy(m.position)}});
+
+// Moons gentle drift
+moon1.position.y=50+Math.sin(t*.03)*2;
+moon1.position.x=-65+Math.sin(t*.02)*3;
+moon2.position.y=65+Math.sin(t*.04+1)*1.5;
+moon2.position.x=80+Math.cos(t*.025)*2;
+
+// Orbs float
+orbs.forEach(o=>{
+o.position.y=o.userData.bY+Math.sin(t*o.userData.sp+o.userData.ph)*.5;
+o.position.x=o.userData.bX+Math.sin(t*o.userData.sp*.7+o.userData.ph+1)*.3});
+
+// Star particles subtle drift
+const pa=pG.attributes.position.array;
+for(let i=0;i<PC;i++){pa[i*3+1]+=Math.sin(t*.08+i*.01)*.0008;pa[i*3]+=Math.cos(t*.06+i*.015)*.0004}
+pG.attributes.position.needsUpdate=true;
+
+// Ships orbit
+ships.forEach(s=>{const d=s.userData,o=d.oR,sp=d.oS,ph=d.oPh;
+s.position.x=d.bP.x+Math.cos(t*sp+ph)*o;
+s.position.z=d.bP.z+Math.sin(t*sp+ph)*o;
+s.position.y=d.bP.y+Math.sin(t*sp*1.3+ph)*2;
+const nx=d.bP.x+Math.cos((t+.02)*sp+ph)*o,nz=d.bP.z+Math.sin((t+.02)*sp+ph)*o;
+s.lookAt(nx,s.position.y,nz)});
+caps.forEach(c=>{c.rotation.y+=c.userData.rS*dt;c.position.x=c.userData.bP.x+Math.sin(t*.04)*3;c.position.y=c.userData.bP.y+Math.sin(t*.06)*1});
+
+// Lasers
+if(t-lastLT>.15+Math.random()*.25){fireLaser();lastLT=t}
+for(let i=lasers.length-1;i>=0;i--){const l=lasers[i];l.userData.life-=dt;l.material.opacity=(l.userData.life/l.userData.ml)*.7;
+if(l.userData.life<=0){scene.remove(l);l.geometry.dispose();l.material.dispose();lasers.splice(i,1);if(Math.random()<.2)boom(l.userData.ep)}}
+for(let i=explosions.length-1;i>=0;i--){const e=explosions[i];e.userData.life-=dt;const p=1-e.userData.life/e.userData.ml;
+e.scale.setScalar(1+p*4);e.material.opacity=Math.max(0,1-p*1.4);
+if(e.userData.life<=0){scene.remove(e);e.geometry.dispose();e.material.dispose();explosions.splice(i,1)}}
+
+// Streaks sway
+stG.children.forEach(l=>{l.position.x=l.userData.bX+Math.sin(t*.12*l.userData.sp)*1.5});
+
+// Haze drift
+hazeArr.forEach(sp=>{
+sp.position.x=sp.userData.bX+Math.sin(t*sp.userData.sp+sp.userData.ph)*4;
+sp.position.y=sp.userData.bY+Math.cos(t*sp.userData.sp*.6+sp.userData.ph)*2});
+
+updZ();
+comp.passes[comp.passes.length-1].uniforms.uTime.value=t;
+sV*=.92;comp.render()}
+animate();setTimeout(updZ,200);
+</script>
 </body>
 </html>
