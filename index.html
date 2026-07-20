@@ -37,19 +37,22 @@ body {
 #scroll-spacer { height: 1600vh; }
 #webgl { position: fixed; inset: 0; z-index: 1; }
 .cursor {
-    position: fixed; width: 11px; height: 11px;
-    border: 1px solid var(--text-dim);
-    border-radius: 50%; pointer-events: none; z-index: 9999;
-    transform: translate(-50%, -50%);
-    transition: width .3s cubic-bezier(.16,1,.3,1), height .3s cubic-bezier(.16,1,.3,1), border-color .3s, background .3s;
+    position: fixed; width: 22px; height: 22px; pointer-events: none; z-index: 9999;
+    transform: translate(-50%, -50%) rotate(0deg);
+    transition: width .28s cubic-bezier(.16,1,.3,1), height .28s cubic-bezier(.16,1,.3,1), transform .28s cubic-bezier(.16,1,.3,1);
 }
-.cursor.hover { width: 52px; height: 52px; border-color: var(--accent); background: rgba(33,29,22,0.03); }
+.cursor::before, .cursor::after { content: ''; position: absolute; }
+.cursor::before { left: 50%; top: 0; width: 1px; height: 100%; transform: translateX(-50%);
+    background: linear-gradient(to bottom, var(--accent) 0 36%, transparent 36% 64%, var(--accent) 64% 100%); }
+.cursor::after { top: 50%; left: 0; height: 1px; width: 100%; transform: translateY(-50%);
+    background: linear-gradient(to right, var(--accent) 0 36%, transparent 36% 64%, var(--accent) 64% 100%); }
+.cursor.hover { width: 38px; height: 38px; transform: translate(-50%, -50%) rotate(45deg); }
 .cursor-dot {
-    position: fixed; width: 4px; height: 4px; background: var(--text);
+    position: fixed; width: 4px; height: 4px; background: var(--accent);
     border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%, -50%);
-    transition: opacity .3s;
+    transition: transform .28s cubic-bezier(.16,1,.3,1);
 }
-.cursor.hover ~ .cursor-dot, body:has(.cursor.hover) .cursor-dot { opacity: 0; }
+.cursor.hover ~ .cursor-dot, body:has(.cursor.hover) .cursor-dot { transform: translate(-50%, -50%) scale(2); }
 #loader {
     position: fixed; inset: 0; background: var(--bg); z-index: 1000;
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
@@ -839,7 +842,7 @@ function animate(){
   scroll += (targetScroll-scroll)*0.06;
   for(const gf of gifTextures){ try{ gf.cx.drawImage(gf.im,0,0,gf.w,gf.h); gf.tex.needsUpdate=true; }catch(e){} }
   for(const s of spriteAnims){ const fr=Math.floor(t*s.cfg.fps)%s.cfg.frames; s.tex.offset.set((fr%s.cfg.cols)/s.cfg.cols, 1-(Math.floor(fr/s.cfg.cols)+1)/s.cfg.rows); }
-  if(!isMobile){ cursorX+=(mouseX-cursorX)*0.1; cursorY+=(mouseY-cursorY)*0.1; cursor.style.left=cursorX+'px'; cursor.style.top=cursorY+'px'; cursorDot.style.left=mouseX+'px'; cursorDot.style.top=mouseY+'px'; }
+  if(!isMobile){ cursorX+=(mouseX-cursorX)*0.28; cursorY+=(mouseY-cursorY)*0.28; cursor.style.left=cursorX+'px'; cursor.style.top=cursorY+'px'; cursorDot.style.left=mouseX+'px'; cursorDot.style.top=mouseY+'px'; }
   if(HL.length && currentZone===0){
     const R=175, STR=62, moved=mouseMoved;
     for(const o of HL){
