@@ -269,6 +269,7 @@ nav {
     .cursor, .cursor-dot { display: none; }
     nav { padding: 20px 24px; }
     .nav-links { display: none; }
+    #webgl { z-index: 55; pointer-events: none; }   /* 3D content renders ON TOP of the copy on mobile; taps/scroll pass through to the text + links */
     .zone-hero { padding: 0 5vw; }
     .hero-name { font-size: 6.6vw; }
     .hero-role { max-width: 88vw; font-size: 14px; }
@@ -697,15 +698,23 @@ function buildImageCluster(urls, maxSize, spread, side, offsets, heroIdx, backSe
     const item = new THREE.Group();
     const img = new THREE.Mesh(new THREE.PlaneGeometry(3,2), new THREE.MeshBasicMaterial({ transparent:true, opacity:0, side:THREE.DoubleSide, depthWrite:false, toneMapped:false, alphaTest:0.05 }));
     item.add(img);
-    item.userData = { bx:gx, by:gy, bz:gz, url, fO:i*1.7, fS:0.16+((i*13)%10)/60, img };
+    item.userData = { bx:gx, by:gy, bz:gz, url, ms, fO:i*1.7, fS:0.16+((i*13)%10)/60, img };
     g.add(item); items.push(item);
-    makeMediaTexture(url, (tex,a)=>{
+  });
+  g.userData.items = items; return g;
+}
+// lazy texture load: only fetch/decode a section's images when you approach it (fast initial load on both mobile + desktop)
+function loadClusterTextures(cluster){
+  if(cluster.userData.texLoaded) return;
+  cluster.userData.texLoaded = true;
+  cluster.userData.items.forEach(it=>{
+    const u = it.userData, img = u.img, ms = u.ms;
+    makeMediaTexture(u.url, (tex,a)=>{
       img.material.map = tex; img.material.needsUpdate = true;
       let w,h; if(a>1){ w=ms; h=ms/a; } else { h=ms; w=ms*a; }
       img.geometry.dispose(); img.geometry = new THREE.PlaneGeometry(w,h);
     });
   });
-  g.userData.items = items; return g;
 }
 
 // LIQUID CHROME material + blob geometry
@@ -910,10 +919,11 @@ function animate(){
     if(scroll > up || scroll < dn) closeDesc();
   }
   pieces.forEach((p,idx)=>{
-    const vis = getVis(scroll, pieceRanges[idx]);
+    const r = pieceRanges[idx];
+    if(scroll > r.start-0.08 && scroll < r.end+0.08) loadClusterTextures(p.cluster);   // lazy-load this section's textures on approach
+    const vis = getVis(scroll, r);
     p.wrapper.visible = vis>0.01;
     if(!p.wrapper.visible) return;
-    const r = pieceRanges[idx];
     p.wrapper.position.y = scroll<r.peak ? (1-vis)*14 : -(1-vis)*14;
     p.wrapper.scale.setScalar(0.5+vis*0.5);
     p.cluster.quaternion.copy(camera.quaternion);   // whole cluster faces camera -> local x/y = screen
@@ -952,6 +962,7 @@ const _plane=new THREE.Plane(), _hit=new THREE.Vector3(), _off=new THREE.Vector3
 function setDragPlane(){ camera.getWorldDirection(_nrm); _plane.setFromNormalAndCoplanarPoint(_nrm.clone().negate(), dragItem.getWorldPosition(_wp)); }
 addEventListener('pointerdown', e=>{
   if(e.target.closest('a,button,nav,#descPanel')) return;
+  if(isMobile) return;   // no image drag / tap-to-open cards on mobile
   const m=pieceAt(e.clientX,e.clientY);
   if(!m){ bgDown=true; downX=e.clientX; downY=e.clientY; moved=false; return; }
   bgDown=false; dragItem=m.parent; dragItemU=dragItem.userData; downX=e.clientX; downY=e.clientY; moved=false;
