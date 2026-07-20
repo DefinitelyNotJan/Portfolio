@@ -487,7 +487,7 @@ setTimeout(() => document.getElementById('loader').classList.add('done'), 2000);
 const canvas = document.getElementById('webgl');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(devicePixelRatio, isMobile ? 1.5 : 2));
 renderer.setClearColor(0x000000, 0);   // transparent -> the CSS chrome surface shows through
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.15;
@@ -655,6 +655,20 @@ function makeMediaTexture(url, onReady){
       gifTextures.push({ im, cx, tex, w:c.width, h:c.height });
       onReady(tex, c.width/c.height);
     };
+    im.src = url;
+    return;
+  }
+  if(isMobile){
+    // downscale to a light texture (no mipmaps, no anisotropy) so phones don't freeze decoding/uploading full-res images on first scroll
+    const im = new Image();
+    im.onload = ()=>{ (im.decode ? im.decode().catch(()=>{}) : Promise.resolve()).then(()=>{
+      const iw = im.naturalWidth||1, ih = im.naturalHeight||1, MAXDIM = 1024, sc = Math.min(1, MAXDIM/Math.max(iw,ih));
+      const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(iw*sc)); c.height = Math.max(1, Math.round(ih*sc));
+      c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+      const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+      tex.generateMipmaps = false; tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; tex.anisotropy = 1;
+      onReady(tex, iw/ih);
+    }); };
     im.src = url;
     return;
   }
