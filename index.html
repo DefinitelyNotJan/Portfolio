@@ -266,10 +266,22 @@ nav {
     .cursor, .cursor-dot { display: none; }
     nav { padding: 20px 24px; }
     .nav-links { display: none; }
-    .zone-hero { left: 5vw; right: 5vw; bottom: 10vh; }
-    .zone-side { max-width: 85vw; }
-    .zone-side.left { left: 5vw; }
-    .zone-side.right { right: 5vw; }
+    .zone-hero { padding: 0 5vw; }
+    .hero-name { font-size: 6.6vw; }
+    .hero-role { max-width: 88vw; font-size: 14px; }
+    /* copy spans full width: text block anchored top, stat pinned bottom; 3D floats in the middle band */
+    .zone-side, .zone-side.left, .zone-side.right {
+        top: 0; bottom: 0; left: 0; right: 0; max-width: none;
+        padding: 12vh 6vw 5vh; text-align: left;
+        display: flex; flex-direction: column;
+    }
+    .zone-side .zone-label { justify-content: flex-start; }
+    .zone-title { font-size: clamp(32px, 9.5vw, 62px); }
+    .zone-title::after, .zone-side.right .zone-title::after { margin-left: 0; }
+    .case-hook { font-size: 17px; max-width: none; }
+    .case-narr p { font-size: 13.5px; max-width: none; }
+    .case-stat { margin-top: auto; }
+    .case-stat .num { font-size: clamp(46px, 15vw, 88px); }
     .zone-marker { right: 24px; bottom: 24px; }
     .cta-buttons { flex-direction: column; align-items: center; }
 }
@@ -645,7 +657,7 @@ function makeMediaTexture(url, onReady){
   loader.load(url, tex=>{ tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = maxA; onReady(tex, tex.image.width/tex.image.height); });
 }
 function buildImageCluster(urls, maxSize, spread, side, offsets, heroIdx, backSet, frontSet, bigSet, cx, cy){
-  const MAXS = maxSize || 3.0; const SP = spread || 1; const SIDE = side || 1; const CXo = cx||0, CYo = cy||0;
+  const MAXS = (maxSize || 3.0) * (isMobile ? 0.6 : 1); const SP = spread || 1; const SIDE = side || 1; const CXo = cx||0, CYo = cy||0;
   const g = new THREE.Group(); const items = []; const n = urls.length;
   urls.forEach((url,i)=>{
     const heroArr = Array.isArray(heroIdx) ? heroIdx : (heroIdx>=0 ? [heroIdx] : []);
@@ -656,8 +668,9 @@ function buildImageCluster(urls, maxSize, spread, side, offsets, heroIdx, backSe
     const tt = (i+0.5)/n;
     const ang = i*2.3999632;                                            // golden angle -> even, non-grid scatter
     const rad = Math.sqrt(tt)*4.7*SP;
-    let gx = SIDE*3.1 + CXo + Math.cos(ang)*rad*1.12 + off[0];
-    let gy = CYo + Math.sin(ang)*rad*0.95 + off[1];
+    let gx, gy;
+    if(isMobile){ gx = Math.cos(ang)*rad*0.55 + off[0]; gy = Math.sin(ang)*rad*0.95 - 1.1 + off[1]; }   // centered, biased into the lower band below the copy
+    else { gx = SIDE*3.1 + CXo + Math.cos(ang)*rad*1.12 + off[0]; gy = CYo + Math.sin(ang)*rad*0.95 + off[1]; }
     let gz = Math.sin(i*1.7)*2.3 + Math.cos(i*0.9)*1.1;                 // organic depth -> layered planes
     let ms = MAXS;
     if(isFront){ gz += 3.0; }
