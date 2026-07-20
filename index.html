@@ -834,8 +834,12 @@ const l1 = new THREE.PointLight(0x8fd6ff, 1.6, 55); l1.position.set(-9,5,8); sce
 const l2 = new THREE.PointLight(0xc9a8ff, 1.2, 55); l2.position.set(9,-5,-6); scene.add(l2);
 
 // SCROLL / ZONES
+if('scrollRestoration' in history) history.scrollRestoration='manual';   // always start fresh at the hero, never restore a stale scroll position
 let scroll=0, targetScroll=0;
-const scrollHeight = document.getElementById('scroll-spacer').offsetHeight - innerHeight;
+let scrollHeight = document.getElementById('scroll-spacer').offsetHeight - innerHeight;
+function recalcScroll(){ scrollHeight = document.getElementById('scroll-spacer').offsetHeight - innerHeight; targetScroll = scrollHeight>0 ? scrollY/scrollHeight : 0; }
+addEventListener('resize', recalcScroll);   // mobile URL-bar / orientation changes innerHeight
+addEventListener('load', ()=>{ window.scrollTo(0,0); scroll=targetScroll=0; });
 const zones = document.querySelectorAll('.zone');
 const zoneLabel = document.getElementById('zoneLabel');
 const scrollHint = document.getElementById('scrollHint');
@@ -843,7 +847,7 @@ const progressBar = document.getElementById('progressBar');
 const zoneNames = ['START','GLS','DHL','HAMMAM','DRAGON','BRAND','HELLOFRESH','IKEA','UPM','TOOLKIT','CONNECT'];
 const zoneThresholds = [0,0.05,0.14,0.23,0.32,0.41,0.50,0.59,0.68,0.80,0.90];
 let currentZone=0;
-addEventListener('scroll', ()=>{ targetScroll=scrollY/scrollHeight; }, {passive:true});
+addEventListener('scroll', ()=>{ targetScroll = scrollHeight>0 ? scrollY/scrollHeight : 0; }, {passive:true});
 window.scrollToZone = i => window.scrollTo({ top: zoneThresholds[i]*scrollHeight, behavior:'smooth' });
 const pieceRanges = [{start:0.01,peak:0.05,end:0.095},{start:0.095,peak:0.14,end:0.185},{start:0.185,peak:0.23,end:0.275},{start:0.275,peak:0.32,end:0.365},{start:0.365,peak:0.41,end:0.455},{start:0.455,peak:0.50,end:0.545},{start:0.545,peak:0.59,end:0.635},{start:0.635,peak:0.68,end:0.74}];
 function getVis(sc,r){ if(sc<r.start||sc>r.end) return 0; if(sc<r.peak) return (sc-r.start)/(r.peak-r.start); return 1-(sc-r.peak)/(r.end-r.peak); }
