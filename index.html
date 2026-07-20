@@ -24,15 +24,18 @@ html, body {
     font-family: 'Loos', -apple-system, sans-serif;
     font-synthesis: none;
     overflow-x: hidden;
+    touch-action: pan-y;
     cursor: none;
     -webkit-font-smoothing: antialiased;
 }
-body {
+body { background: #d6d9de; }
+/* fixed background LAYER instead of background-attachment:fixed, which stalls scrolling on iOS Safari for a very tall page */
+#bgfixed {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
     background:
       radial-gradient(120% 100% at 78% 2%, rgba(255,255,255,0.55), rgba(255,255,255,0) 58%),
       radial-gradient(110% 90% at 12% 104%, rgba(255,255,255,0.32), rgba(255,255,255,0) 52%),
       linear-gradient(158deg, #dcdfe4 0%, #e9ecef 28%, #d2d6db 54%, #e6e9ec 78%, #d8dbe0 100%);
-    background-attachment: fixed;
 }
 #scroll-spacer { height: 1600vh; }
 #webgl { position: fixed; inset: 0; z-index: 1; }
@@ -288,6 +291,7 @@ nav {
 </style>
 </head>
 <body>
+<div id="bgfixed"></div>
 <div id="loader">
     <div class="loader-text">JL</div>
     <div class="loader-bar"><div class="loader-bar-fill"></div></div>
