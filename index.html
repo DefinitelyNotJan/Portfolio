@@ -913,7 +913,7 @@ function animate(){
 
   focusAmt += ((focusedItemU?1:0)-focusAmt)*0.1;
   // close the open card once scroll passes the halfway point toward an adjacent section
-  if(descZone>=0 && descPanel.classList.contains('open')){
+  if(descZone>=0 && (descPanel.classList.contains('open') || (isMobile && focusedItemU))){
     const up = (zoneThresholds[descZone] + (zoneThresholds[descZone+1] ?? 1)) / 2;
     const dn = ((zoneThresholds[descZone-1] ?? 0) + zoneThresholds[descZone]) / 2;
     if(scroll > up || scroll < dn) closeDesc();
@@ -957,12 +957,15 @@ function pieceAt(cx,cy){
   const meshes=[]; pieces.forEach(p=>{ if(p.wrapper.visible) p.cluster.userData.items.forEach(it=>{ if(it.userData.img.material.map) meshes.push(it.userData.img); }); });
   const hits=_ray.intersectObjects(meshes,false); return hits.length?hits[0].object:null;
 }
-let dragItem=null, dragItemU=null, downX=0, downY=0, moved=false, bgDown=false;
+let dragItem=null, dragItemU=null, downX=0, downY=0, moved=false, bgDown=false, tapCandidate=null;
 const _plane=new THREE.Plane(), _hit=new THREE.Vector3(), _off=new THREE.Vector3(), _wp=new THREE.Vector3(), _nrm=new THREE.Vector3();
 function setDragPlane(){ camera.getWorldDirection(_nrm); _plane.setFromNormalAndCoplanarPoint(_nrm.clone().negate(), dragItem.getWorldPosition(_wp)); }
 addEventListener('pointerdown', e=>{
   if(e.target.closest('a,button,nav,#descPanel')) return;
-  if(isMobile) return;   // no image drag / tap-to-open cards on mobile
+  if(isMobile){   // mobile: tap an image to enhance (fly to front + scale), no drag (keeps scroll free), no info card
+    const mm=pieceAt(e.clientX,e.clientY);
+    tapCandidate = mm ? mm.parent : null; downX=e.clientX; downY=e.clientY; moved=false; return;
+  }
   const m=pieceAt(e.clientX,e.clientY);
   if(!m){ bgDown=true; downX=e.clientX; downY=e.clientY; moved=false; return; }
   bgDown=false; dragItem=m.parent; dragItemU=dragItem.userData; downX=e.clientX; downY=e.clientY; moved=false;
@@ -972,6 +975,7 @@ addEventListener('pointerdown', e=>{
   document.body.style.cursor='grabbing';
 });
 addEventListener('pointermove', e=>{
+  if(isMobile){ if(Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)>8) moved=true; return; }   // a scroll gesture cancels the tap
   if(dragItem){
     if(Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)>4) moved=true;
     _ndc.x=(e.clientX/innerWidth)*2-1; _ndc.y=-(e.clientY/innerHeight)*2+1; _ray.setFromCamera(_ndc,camera);
@@ -979,13 +983,20 @@ addEventListener('pointermove', e=>{
   } else { if(bgDown && Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)>4) moved=true; if(!isMobile && e.target && e.target.id==='webgl') cursor.classList.toggle('hover', !!pieceAt(e.clientX,e.clientY)); }
 }, {passive:true});
 addEventListener('pointerup', ()=>{
+  if(isMobile){
+    if(!moved){
+      if(tapCandidate){ const u=tapCandidate.userData; if(focusedItemU===u) closeDesc(); else focusItem(tapCandidate); }   // tap image: enhance; tap it again: release
+      else if(focusedItemU) closeDesc();   // tap empty space: release
+    }
+    tapCandidate=null; return;
+  }
   if(dragItem){ if(!moved) focusItem(dragItem); dragItem=null; dragItemU=null; document.body.style.cursor=''; }
   else if(bgDown){ if(!moved && focusedItemU) closeDesc(); bgDown=false; }
 });
 // description panel
 const descPanel=document.getElementById('descPanel'), descTitle=document.getElementById('descTitle'), descBody=document.getElementById('descBody'), descTag=document.getElementById('descTag');
 let focusedItemU=null, focusAmt=0, descZone=-1;
-function focusItem(it){ focusedItemU=it.userData; descZone=currentZone; openDesc(it.userData.url); }
+function focusItem(it){ focusedItemU=it.userData; descZone=currentZone; if(!isMobile) openDesc(it.userData.url); }   // mobile: enhance only, no info card
 function openDesc(url){ const info=DESC[url]||{t:'Untitled work',d:'Part of this project.',tag:''}; descTag.textContent=info.tag||''; descTag.style.display=info.tag?'inline-block':'none'; descTitle.textContent=info.t; descBody.textContent=info.d; descPanel.classList.add('open'); }
 function closeDesc(){ descPanel.classList.remove('open'); focusedItemU=null; descZone=-1; }
 document.getElementById('descClose').addEventListener('click', closeDesc);
