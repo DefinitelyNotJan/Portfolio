@@ -478,7 +478,7 @@ document.querySelectorAll('a, .btn').forEach(el => {
   el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
 });
 
-// LOADER — dismiss on readiness OR first interaction, capped short; never blocks scroll (see #loader pointer-events:none)
+// LOADER: dismiss on readiness OR first interaction, capped short; never blocks scroll (see #loader pointer-events:none)
 { const _ld = document.getElementById('loader'); let _ldDone = false;
   const dismissLoader = () => { if(_ldDone) return; _ldDone = true; _ld.classList.add('done'); };
   (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(()=> requestAnimationFrame(dismissLoader));
@@ -852,7 +852,7 @@ let scrollHeight = document.getElementById('scroll-spacer').offsetHeight - inner
 function recalcScroll(){ scrollHeight = document.getElementById('scroll-spacer').offsetHeight - innerHeight; targetScroll = scrollHeight>0 ? scrollY/scrollHeight : 0; }
 addEventListener('resize', recalcScroll);   // mobile URL-bar / orientation changes innerHeight
 window.scrollTo(0,0);   // start at the hero once, synchronously (scrollRestoration is manual); NO late load-event reset that would yank a scrolling user back
-addEventListener('pageshow', e=>{ if(e.persisted){ window.scrollTo(0,0); scroll=targetScroll=0; } });   // bfcache back-nav only — never fires mid initial load
+addEventListener('pageshow', e=>{ if(e.persisted){ window.scrollTo(0,0); scroll=targetScroll=0; } });   // bfcache back-nav only, never fires mid initial load
 const zones = document.querySelectorAll('.zone');
 const zoneLabel = document.getElementById('zoneLabel');
 const scrollHint = document.getElementById('scrollHint');
