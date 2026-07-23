@@ -136,7 +136,7 @@ nav {
 .hero-scroll { margin-top: 4.5vh; font-family:'Loos',sans-serif; font-size: 10.5px; font-weight: 500; letter-spacing: 0.24em; text-transform: uppercase; color: var(--text-muted); display: flex; align-items: center; gap: 10px; opacity: 0; animation: fadeUp 1s ease 1.05s forwards; }
 .hero-scroll .bar { width: 34px; height: 1px; background: var(--text-muted); display: inline-block; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-.zone-side { top: 14vh; max-width: 540px; transform: none; }
+.zone-side { top: 9vh; max-width: 520px; transform: none; }
 .zone-side.left { left: 6vw; }
 .zone-side.right { right: 6vw; text-align: right; }
 .zone-label {
@@ -152,13 +152,13 @@ nav {
 .zone-label.grad { background: linear-gradient(90deg, var(--accent), var(--accent-alt)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .zone-label.grad::before { background: linear-gradient(90deg, var(--accent), var(--accent-alt)); }
 .zone-title {
-    font-family: 'Loos', sans-serif; font-size: clamp(42px, 6vw, 94px);
-    font-weight: 900; line-height: 0.9; letter-spacing: -0.038em; margin-bottom: 3.4vh; position: relative;
+    font-family: 'Loos', sans-serif; font-size: clamp(38px, 5vw, 76px);
+    font-weight: 900; line-height: 0.9; letter-spacing: -0.038em; margin-bottom: 2.2vh; position: relative;
     clip-path: inset(-0.12em 0 108% 0); transform: translateY(0.12em);
     transition: clip-path .85s cubic-bezier(.16,1,.3,1) .12s, transform .85s cubic-bezier(.16,1,.3,1) .12s;
 }
 .zone.active .zone-title { clip-path: inset(-0.12em 0 -0.12em 0); transform: translateY(0); }
-.zone-title::after { content:''; display:block; width:44px; height:1px; margin-top:3vh; background:var(--text-muted); }
+.zone-title::after { content:''; display:block; width:44px; height:1px; margin-top:1.6vh; background:var(--text-muted); }
 .zone-side.right .zone-title::after { margin-left:auto; }
 .zone-title { text-wrap: balance; }
 .zone-title .tw { display: inline-block; white-space: nowrap; }
@@ -210,15 +210,15 @@ nav {
 .tag:hover::before { opacity: 1; }
 .tag.warm, .tag.cool { color: var(--text-dim); }
 /* --- case study: narrative + outcome pull-stat (replaces the metadata grid) --- */
-.case-meta { font-family:'Loos',sans-serif; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); margin-bottom:22px; }
-.case-hook { font-family:'Loos',sans-serif; font-size:21px; font-weight:500; line-height:1.28; color:var(--text); margin:3vh 0 3.2vh; max-width:460px; }
+.case-meta { font-family:'Loos',sans-serif; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); margin-bottom:11px; }
+.case-hook { font-family:'Loos',sans-serif; font-size:18px; font-weight:500; line-height:1.25; color:var(--text); margin:1.8vh 0 2vh; max-width:460px; }
 .zone-side.right .case-hook { margin-left:auto; }
-.case-narr p { font-family:'Loos',sans-serif; font-size:14.5px; line-height:1.62; color:var(--text-dim); max-width:440px; margin-bottom:14px; }
+.case-narr p { font-family:'Loos',sans-serif; font-size:13.5px; line-height:1.5; color:var(--text-dim); max-width:440px; margin-bottom:9px; }
 .zone-side.right .case-narr p { margin-left:auto; }
 .case-narr b { color:var(--text); font-weight:500; }
-.case-stat { margin-top:4vh; display:flex; align-items:baseline; gap:18px; }
+.case-stat { margin-top:2.2vh; display:flex; align-items:baseline; gap:16px; }
 .zone-side.right .case-stat { justify-content:flex-end; }
-.case-stat .num { font-family:'Loos',sans-serif; font-weight:900; font-size:clamp(56px,6.5vw,104px); line-height:0.86; letter-spacing:-0.045em; color:var(--text); }
+.case-stat .num { font-family:'Loos',sans-serif; font-weight:900; font-size:clamp(44px,5vw,82px); line-height:0.86; letter-spacing:-0.045em; color:var(--text); }
 .case-stat .cap { font-family:'Loos',sans-serif; font-size:11px; line-height:1.45; color:var(--text-muted); max-width:200px; text-transform:uppercase; letter-spacing:0.03em; text-align:left; }
 .zone-period { font-size: 11px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.04em; margin-bottom: 6px; }
 .zone-cta { top: 50%; left: 50%; transform: translate(-50%, -50%) translateY(40px); text-align: center; max-width: 560px; }
