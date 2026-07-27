@@ -271,6 +271,9 @@ nav {
     nav { padding: 20px 24px; }
     .nav-links { display: none; }
     #webgl { z-index: 55; pointer-events: none; }   /* 3D content renders ON TOP of the copy on mobile; taps/scroll pass through to the text + links */
+    /* let touches pass straight through the full-screen section overlays (so taps reach images + scroll), keeping only real links/buttons tappable */
+    .zone, .zone.active { pointer-events: none; }
+    .zone a, .zone button { pointer-events: auto; }
     .zone-hero { padding: 0 5vw; }
     .hero-name { font-size: 6.6vw; }
     .hero-role { max-width: 88vw; font-size: 14px; }
@@ -488,9 +491,9 @@ document.querySelectorAll('a, .btn').forEach(el => {
 
 // RENDERER
 const canvas = document.getElementById('webgl');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: !isMobile, alpha: true, powerPreference: 'high-performance' });
 renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio, isMobile ? 1.5 : 2));
+renderer.setPixelRatio(Math.min(devicePixelRatio, isMobile ? 1.25 : 2));
 renderer.setClearColor(0x000000, 0);   // transparent -> the CSS chrome surface shows through
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.15;
@@ -500,26 +503,7 @@ scene.fog = new THREE.FogExp2(0x090a10, 0.0045);
 const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 1000);
 camera.position.set(0, 0, 20);
 
-// IRIDESCENT / HOLOGRAPHIC ENV MAP (chrome reflects cyan-magenta-gold)
-const pmrem = new THREE.PMREMGenerator(renderer);
-const envScene = new THREE.Scene();
-envScene.add(new THREE.Mesh(new THREE.IcosahedronGeometry(100, 4), new THREE.ShaderMaterial({
-  side: THREE.BackSide,
-  vertexShader: `varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
-  fragmentShader: `varying vec3 vP;
-    void main(){
-      vec3 d = normalize(vP); float t = d.y*.5+.5;
-      vec3 base = mix(vec3(.02,.025,.045), vec3(.10,.11,.16), t);
-      float a = atan(d.z, d.x);
-      vec3 irid = .5 + .5*cos(vec3(0.,2.1,4.2) + a*2.0 + t*3.0);
-      base += irid * (smoothstep(.55,1.,abs(d.y)) * 0.22);
-      base += vec3(.9,.96,1.) * smoothstep(.9,1., dot(d, normalize(vec3(1.,.9,-.4)))) * 1.0;
-      base += vec3(.7,.85,1.) * smoothstep(.9,1., dot(d, normalize(vec3(-.8,.4,.6)))) * .6;
-      gl_FragColor = vec4(base, 1.);
-    }`
-})));
-const envMap = pmrem.fromScene(envScene, 0.03).texture;
-scene.environment = envMap;
+// (removed the PMREM env map: it rendered a full cubemap at load but was only used by the never-called chrome material, so it cost startup time for nothing)
 
 // SELECTIVE BLOOM (content photos are excluded, they can never bloom)
 const BLOOM = 1;
@@ -703,7 +687,7 @@ function loadClusterTextures(cluster){
 }
 
 // LIQUID CHROME material + blob geometry
-function chromeMat(){ return new THREE.MeshPhysicalMaterial({ color:0xf2f5fb, metalness:1.0, roughness:0.045, envMap, envMapIntensity:2.6, clearcoat:1.0, clearcoatRoughness:0.03, iridescence:1.0, iridescenceIOR:1.6, iridescenceThicknessRange:[120,520] }); }
+function chromeMat(){ return new THREE.MeshPhysicalMaterial({ color:0xf2f5fb, metalness:1.0, roughness:0.045, envMap:null, envMapIntensity:2.6, clearcoat:1.0, clearcoatRoughness:0.03, iridescence:1.0, iridescenceIOR:1.6, iridescenceThicknessRange:[120,520] }); }
 function blobGeo(r, detail){
   const g = new THREE.IcosahedronGeometry(r, detail); const p = g.attributes.position; const v = new THREE.Vector3();
   for(let i=0;i<p.count;i++){ v.fromBufferAttribute(p,i); const nn = Math.sin(v.x*1.7)*Math.cos(v.y*1.9)*Math.sin(v.z*1.5); v.multiplyScalar(1+nn*0.15); p.setXYZ(i,v.x,v.y,v.z); }
