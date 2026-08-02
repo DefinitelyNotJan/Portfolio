@@ -806,7 +806,7 @@ IMG_GROUPS.forEach((urls, idx) => {
 // ===== THE HEART: one living core at the exact center, always. Work orbits it; you spiral inward. =====
 function makeCore(){
   const g = new THREE.Group();
-  const N = 4200;
+  const N = isMobile ? 1800 : 4200;   // fewer particles on phones: lighter build spike + smoother frame rate
   const pos = new Float32Array(N*3), seed = new Float32Array(N), grad = new Float32Array(N);
   for(let i=0;i<N;i++){
     const tt = i/N, arm = i%3;
