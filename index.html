@@ -462,6 +462,22 @@ nav {
 
 <div id="scroll-spacer"></div>
 
+<link rel="modulepreload" href="./lib/three.module.js">
+<!-- LOADER dismissal lives in a PLAIN script (not the module) so it runs the instant the page parses.
+     If it lived in the type=module below, it couldn't run until three.module.js finished downloading —
+     on a phone that's several seconds, during which the tall page scrolls natively but nothing dismisses
+     the loader. That was the bug: "loader won't disappear on scroll even though content scrolls behind it." -->
+<script>
+(function(){
+  var ld = document.getElementById('loader'); if(!ld) return;
+  var done = false;
+  function dismiss(){ if(done) return; done = true; ld.classList.add('done'); }
+  window.__dismissLoader = dismiss;
+  (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(function(){ requestAnimationFrame(dismiss); });
+  setTimeout(dismiss, 900);   // safety cap
+  ['scroll','touchstart','touchmove','wheel','pointerdown'].forEach(function(ev){ addEventListener(ev, dismiss, {once:true, passive:true}); });
+})();
+</script>
 <script type="importmap">
 {"imports":{"three":"./lib/three.module.js"}}
 </script>
@@ -481,15 +497,9 @@ document.querySelectorAll('a, .btn').forEach(el => {
   el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
 });
 
-// LOADER: dismiss on readiness OR first interaction, capped short; never blocks scroll (see #loader pointer-events:none)
-{ const _ld = document.getElementById('loader'); let _ldDone = false;
-  const dismissLoader = () => { if(_ldDone) return; _ldDone = true; _ld.classList.add('done'); };
-  window.__dismissLoader = dismissLoader;   // let the scroll handler clear it the instant the page moves
-  (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(()=> requestAnimationFrame(dismissLoader));
-  setTimeout(dismissLoader, 900);   // safety cap so it can never hang
-  // include scroll + touchmove: a flick-scroll on mobile fires these but not always a clean touchstart, and wheel never fires on touch
-  ['scroll','touchstart','touchmove','wheel','pointerdown'].forEach(ev => addEventListener(ev, dismissLoader, {once:true, passive:true}));
-}
+// LOADER dismissal now runs in a plain <script> in <head> (before this module) so it works even while
+// three.module.js is still downloading on mobile. window.__dismissLoader is defined there; the scroll
+// handler below also calls it as a belt-and-suspenders.
 
 // RENDERER
 const canvas = document.getElementById('webgl');
