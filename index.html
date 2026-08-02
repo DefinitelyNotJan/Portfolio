@@ -59,7 +59,7 @@ body { background: #d6d9de; }
 #loader {
     position: fixed; inset: 0; background: var(--bg); z-index: 1000;
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
-    transition: opacity 0.8s ease, visibility 0.8s;
+    transition: opacity 0.35s ease, visibility 0.35s;
     pointer-events: none;   /* never intercept the first touch; the page can scroll immediately underneath the fade */
 }
 #loader.done { opacity: 0; visibility: hidden; pointer-events: none; }
@@ -484,9 +484,11 @@ document.querySelectorAll('a, .btn').forEach(el => {
 // LOADER: dismiss on readiness OR first interaction, capped short; never blocks scroll (see #loader pointer-events:none)
 { const _ld = document.getElementById('loader'); let _ldDone = false;
   const dismissLoader = () => { if(_ldDone) return; _ldDone = true; _ld.classList.add('done'); };
+  window.__dismissLoader = dismissLoader;   // let the scroll handler clear it the instant the page moves
   (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(()=> requestAnimationFrame(dismissLoader));
-  setTimeout(dismissLoader, 1400);   // safety cap so it can never hang
-  ['touchstart','wheel','pointerdown'].forEach(ev => addEventListener(ev, dismissLoader, {once:true, passive:true}));
+  setTimeout(dismissLoader, 900);   // safety cap so it can never hang
+  // include scroll + touchmove: a flick-scroll on mobile fires these but not always a clean touchstart, and wheel never fires on touch
+  ['scroll','touchstart','touchmove','wheel','pointerdown'].forEach(ev => addEventListener(ev, dismissLoader, {once:true, passive:true}));
 }
 
 // RENDERER
@@ -594,6 +596,11 @@ const DESC = {
 const gifTextures = [];
 const spriteAnims = [];
 const ANIM_SHEETS = {"img/DHL_anim1_sheet.png":{cols:8,rows:6,frames:48,fps:4.8,aspect:0.5625},"img/DHL_anim2_sheet.png":{cols:8,rows:6,frames:48,fps:4.8,aspect:0.5625},"img/UPM_anim_sheet.png":{cols:8,rows:5,frames:38,fps:8,aspect:0.565}};
+// Mobile: drain texture canvas-draw + GPU upload in ~6ms slices per frame, so a burst of images
+// finishing download together can't do all their heavy work in one blocking chunk while the user scrolls.
+const _texQueue = []; let _texPumping = false;
+function _pumpTex(){ const t0 = performance.now(); while(_texQueue.length && performance.now()-t0 < 6){ _texQueue.shift()(); } if(_texQueue.length) requestAnimationFrame(_pumpTex); else _texPumping = false; }
+function _enqueueTex(fn){ _texQueue.push(fn); if(!_texPumping){ _texPumping = true; requestAnimationFrame(_pumpTex); } }
 function makeMediaTexture(url, onReady){
   const ext = url.split('?')[0].split('.').pop().toLowerCase();
   const maxA = renderer.capabilities.getMaxAnisotropy();
@@ -633,14 +640,14 @@ function makeMediaTexture(url, onReady){
   if(isMobile){
     // downscale to a light texture (no mipmaps, no anisotropy) so phones don't freeze decoding/uploading full-res images on first scroll
     const im = new Image();
-    im.onload = ()=>{ (im.decode ? im.decode().catch(()=>{}) : Promise.resolve()).then(()=>{
+    im.onload = ()=>{ (im.decode ? im.decode().catch(()=>{}) : Promise.resolve()).then(()=>{ _enqueueTex(()=>{
       const iw = im.naturalWidth||1, ih = im.naturalHeight||1, MAXDIM = 1024, sc = Math.min(1, MAXDIM/Math.max(iw,ih));
       const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(iw*sc)); c.height = Math.max(1, Math.round(ih*sc));
       c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
       const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
       tex.generateMipmaps = false; tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; tex.anisotropy = 1;
       onReady(tex, iw/ih);
-    }); };
+    }); }); };
     im.src = url;
     return;
   }
@@ -846,7 +853,7 @@ const progressBar = document.getElementById('progressBar');
 const zoneNames = ['START','GLS','DHL','HAMMAM','DRAGON','BRAND','HELLOFRESH','IKEA','UPM','TOOLKIT','CONNECT'];
 const zoneThresholds = [0,0.05,0.14,0.23,0.32,0.41,0.50,0.59,0.68,0.80,0.90];
 let currentZone=0;
-addEventListener('scroll', ()=>{ targetScroll = scrollHeight>0 ? scrollY/scrollHeight : 0; }, {passive:true});
+addEventListener('scroll', ()=>{ if(window.__dismissLoader) window.__dismissLoader(); targetScroll = scrollHeight>0 ? scrollY/scrollHeight : 0; }, {passive:true});
 window.scrollToZone = i => window.scrollTo({ top: zoneThresholds[i]*scrollHeight, behavior:'smooth' });
 const pieceRanges = [{start:0.01,peak:0.05,end:0.095},{start:0.095,peak:0.14,end:0.185},{start:0.185,peak:0.23,end:0.275},{start:0.275,peak:0.32,end:0.365},{start:0.365,peak:0.41,end:0.455},{start:0.455,peak:0.50,end:0.545},{start:0.545,peak:0.59,end:0.635},{start:0.635,peak:0.68,end:0.74}];
 function getVis(sc,r){ if(sc<r.start||sc>r.end) return 0; if(sc<r.peak) return (sc-r.start)/(r.peak-r.start); return 1-(sc-r.peak)/(r.end-r.peak); }
