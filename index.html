@@ -186,6 +186,8 @@ nav {
 .zone.active .cap-col ~ .cap-col ~ .cap-col { transition-delay: .44s; }
 .zone.active .cap-col ~ .cap-col ~ .cap-col ~ .cap-col { transition-delay: .52s; }
 .zone.active .cap-col ~ .cap-col ~ .cap-col ~ .cap-col ~ .cap-col { transition-delay: .60s; }
+.zone.active .cap-col ~ .cap-col ~ .cap-col ~ .cap-col ~ .cap-col ~ .cap-col { transition-delay: .68s; }
+.zone.active .cap-col ~ .cap-col ~ .cap-col ~ .cap-col ~ .cap-col ~ .cap-col ~ .cap-col { transition-delay: .76s; }
 .zone-text { font-size: 14px; font-weight: 400; color: var(--text-dim); line-height: 1.8; }
 .zone-text .hl { color: var(--text); font-weight: 500; }
 .case-lede { font-family:'Loos',sans-serif; font-size: 17px; color: var(--text-dim); line-height: 1.55; margin-bottom: 3.2vh; max-width: 456px; }
@@ -228,12 +230,21 @@ nav {
 .zone-cap .zone-label { margin-bottom: 14px; }
 .zone-cap .zone-title { margin-bottom: 16px; }
 .cap-intro { font-family: 'Loos', sans-serif; font-size: 15px; color: var(--text-dim); line-height: 1.5; max-width: 520px; }
-.cap-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2.4vw; max-width: 1300px; }
+.cap-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2vw; max-width: 1500px; }
 .cap-col h4 { font-family: 'Loos', sans-serif; font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
 .cap-col ul { list-style: none; }
 .cap-col li { font-family: 'Loos', sans-serif; font-size: 13px; line-height: 1.95; color: var(--text-dim); transition: color .25s; }
 .cap-col li:hover { color: var(--text); }
 @media (max-width: 900px) { .cap-grid { grid-template-columns: repeat(2, 1fr); gap: 5vw 4vw; } .cap-intro { display:none; } }
+@media (max-width: 600px) {
+  .cap-head { margin-bottom: 2.4vh; }
+  .zone-cap .zone-label { display: none; }
+  .cap-grid { grid-template-columns: 1fr; gap: 1.6vh; }
+  .cap-col h4 { margin-bottom: 5px; padding-bottom: 5px; font-size: 9.5px; }
+  .cap-col ul { display: flex; flex-wrap: wrap; }
+  .cap-col li { font-size: 11.5px; line-height: 1.55; }
+  .cap-col li:not(:last-child)::after { content: '·'; margin: 0 6px; color: var(--text-muted); }
+}
 .cta-title {
     font-family: 'Loos', sans-serif; font-size: clamp(40px, 6vw, 72px);
     font-weight: 900; letter-spacing: -0.03em; line-height: 1; margin-bottom: 16px;
@@ -441,6 +452,12 @@ nav {
         </ul></div>
         <div class="cap-col"><h4>Print &amp; Craft</h4><ul>
             <li>Print production</li><li>Prepress</li><li>CMYK &amp; Pantone</li><li>Colour management</li><li>Multi-channel</li><li>Multi-market delivery</li>
+        </ul></div>
+        <div class="cap-col"><h4>AI Design &amp; Motion</h4><ul>
+            <li>AI image generation</li><li>Prompt design for visuals</li><li>AI concepting &amp; moodboards</li><li>AI video generation</li><li>AI campaign content</li><li>AI voice-over &amp; sound</li>
+        </ul></div>
+        <div class="cap-col"><h4>AI Workflow &amp; Code</h4><ul>
+            <li>Generative AI workflows</li><li>AI tool research &amp; testing</li><li>AI content scaling across markets</li><li>AI-assisted coding</li><li>Building websites with AI</li><li>AI app prototyping</li><li>AI agents &amp; automation</li><li>Creative coding &amp; 3D for web</li>
         </ul></div>
         <div class="cap-col"><h4>Toolset</h4><ul>
             <li>Photoshop · Illustrator</li><li>InDesign</li><li>After Effects · Premiere</li><li>Figma</li><li>Midjourney · Firefly</li><li>Sora · Veo · Runway</li><li>Claude</li>
