@@ -495,12 +495,38 @@ nav {
   ['scroll','touchstart','touchmove','wheel','pointerdown'].forEach(function(ev){ addEventListener(ev, dismiss, {once:true, passive:true}); });
 })();
 </script>
+<script>
+/* ?debug=1 diagnostic overlay (invisible to normal visitors) */
+(function(){
+  if(!/[?&]debug=1/.test(location.search)) return;
+  var T0=0, D=window.__DBG={nScroll:0, firstScroll:null, moduleAt:null, firstFrame:null, frames:0, last:null, lastFrameAt:0, maxGap:0};
+  addEventListener('scroll',function(){ D.nScroll++; if(D.firstScroll===null) D.firstScroll=Math.round(performance.now()-T0); },{passive:true});
+  D.tick=function(o){ var n=performance.now(); if(D.firstFrame===null) D.firstFrame=Math.round(n-T0); if(D.lastFrameAt){ var g=n-D.lastFrameAt; if(g>D.maxGap) D.maxGap=Math.round(g); } D.lastFrameAt=n; D.frames++; D.last=o; };
+  var el; function draw(){
+    if(!el){ el=document.createElement('pre'); el.style.cssText='position:fixed;left:6px;top:60px;z-index:2147483647;margin:0;padding:8px 10px;background:rgba(0,0,0,.82);color:#7CFC9A;font:11px/1.45 ui-monospace,Menlo,monospace;pointer-events:none;border-radius:6px;max-width:94vw;white-space:pre-wrap'; (document.body||document.documentElement).appendChild(el); }
+    var L=D.last||{}, n=performance.now(), sh=document.documentElement.scrollHeight;
+    el.textContent=
+      't since open   '+Math.round(n-T0)+' ms\n'+
+      'native scrollY '+Math.round(scrollY)+' / '+(sh-innerHeight)+'  ('+(sh-innerHeight>0?(scrollY/(sh-innerHeight)*100).toFixed(1):0)+'%)\n'+
+      'scroll events  '+D.nScroll+'  first at '+(D.firstScroll===null?'-':D.firstScroll+' ms')+'\n'+
+      'module started '+(D.moduleAt===null?'NOT YET':D.moduleAt+' ms')+'\n'+
+      'first frame    '+(D.firstFrame===null?'NOT YET':D.firstFrame+' ms')+'   frames '+D.frames+'\n'+
+      'since last frm '+(D.lastFrameAt?Math.round(n-D.lastFrameAt):'-')+' ms   longest gap '+D.maxGap+' ms\n'+
+      'site target    '+(L.targetScroll!==undefined?(L.targetScroll*100).toFixed(1)+'%':'-')+'   smoothed '+(L.scroll!==undefined?(L.scroll*100).toFixed(1)+'%':'-')+'\n'+
+      'site height    '+(L.scrollHeight!==undefined?Math.round(L.scrollHeight):'-')+'   zone '+(L.zone!==undefined?L.zone:'-')+'\n'+
+      'viewport       '+innerWidth+'x'+innerHeight+'  loader '+(document.getElementById('loader')&&document.getElementById('loader').classList.contains('done')?'gone':'SHOWN');
+    setTimeout(draw,150);
+  }
+  if(document.readyState==='loading') addEventListener('DOMContentLoaded',draw); else draw();
+})();
+</script>
 <script type="importmap">
 {"imports":{"three":"./lib/three.module.min.js"}}
 </script>
 <script type="module">
 
 import * as THREE from 'three';
+if(window.__DBG) window.__DBG.moduleAt = Math.round(performance.now());
 
 const isMobile = /Mobi|Android/i.test(navigator.userAgent) || innerWidth < 768;
 
@@ -896,6 +922,7 @@ const clock = new THREE.Clock();
 function animate(){
   requestAnimationFrame(animate);
   const t = clock.getElapsedTime();
+  if(window.__DBG) window.__DBG.tick({scroll, targetScroll, scrollHeight, zone: currentZone});
   scroll += (targetScroll-scroll)*0.06;
   for(const gf of gifTextures){ try{ gf.cx.drawImage(gf.im,0,0,gf.w,gf.h); gf.tex.needsUpdate=true; }catch(e){} }
   for(const s of spriteAnims){ const fr=Math.floor(t*s.cfg.fps)%s.cfg.frames; s.tex.offset.set((fr%s.cfg.cols)/s.cfg.cols, 1-(Math.floor(fr/s.cfg.cols)+1)/s.cfg.rows); }
