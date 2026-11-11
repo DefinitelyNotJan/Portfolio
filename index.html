@@ -625,6 +625,7 @@ const spriteAnims = [];
 const ANIM_SHEETS = {"img/DHL_anim1_sheet.png":{cols:8,rows:6,frames:48,fps:4.8,aspect:0.5625},"img/DHL_anim2_sheet.png":{cols:8,rows:6,frames:48,fps:4.8,aspect:0.5625},"img/UPM_anim_sheet.png":{cols:8,rows:5,frames:38,fps:8,aspect:0.565}};
 // Mobile: drain texture canvas-draw + GPU upload in ~6ms slices per frame, so a burst of images
 // finishing download together can't do all their heavy work in one blocking chunk while the user scrolls.
+const _videos = []; let _loadingCluster = null;
 const _texQueue = []; let _texPumping = false;
 function _pumpTex(){ const t0 = performance.now(); while(_texQueue.length && performance.now()-t0 < 6){ _texQueue.shift()(); } if(_texQueue.length) requestAnimationFrame(_pumpTex); else _texPumping = false; }
 function _enqueueTex(fn){ _texQueue.push(fn); if(!_texPumping){ _texPumping = true; requestAnimationFrame(_pumpTex); } }
@@ -646,8 +647,8 @@ function makeMediaTexture(url, onReady){
   }
   if(ext==='mp4' || ext==='webm' || ext==='mov'){
     const v = document.createElement('video');
-    v.src=url; v.muted=true; v.loop=true; v.autoplay=true; v.playsInline=true; v.setAttribute('playsinline',''); v.setAttribute('muted','');
-    v.play().catch(()=>{});
+    v.src=url; v.muted=true; v.loop=true; v.playsInline=true; v.preload='auto'; v.setAttribute('playsinline',''); v.setAttribute('muted','');
+    _videos.push({ v, cluster: _loadingCluster });   // played only while its section is on screen (see animate)
     const tex = new THREE.VideoTexture(v); tex.colorSpace = THREE.SRGBColorSpace;
     const ready = ()=>{ if(v.videoWidth) onReady(tex, v.videoWidth/v.videoHeight); };
     v.addEventListener('loadeddata', ready); v.addEventListener('canplay', ready);
@@ -716,6 +717,7 @@ function buildImageCluster(urls, maxSize, spread, side, offsets, heroIdx, backSe
 function loadClusterTextures(cluster){
   if(cluster.userData.texLoaded) return;
   cluster.userData.texLoaded = true;
+  _loadingCluster = cluster;
   cluster.userData.items.forEach(it=>{
     const u = it.userData, img = u.img, ms = u.ms;
     makeMediaTexture(u.url, (tex,a)=>{
@@ -884,7 +886,8 @@ const progressBar = document.getElementById('progressBar');
 const zoneNames = ['START','GLS','DHL','HAMMAM','DRAGON','BRAND','HELLOFRESH','IKEA','UPM','TOOLKIT','CONNECT'];
 const zoneThresholds = [0,0.05,0.14,0.23,0.32,0.41,0.50,0.59,0.68,0.80,0.90];
 let currentZone=0;
-addEventListener('scroll', ()=>{ if(window.__dismissLoader) window.__dismissLoader(); targetScroll = scrollHeight>0 ? scrollY/scrollHeight : 0; }, {passive:true});
+let _userScrolled = false;
+addEventListener('scroll', ()=>{ _userScrolled = true; if(window.__dismissLoader) window.__dismissLoader(); targetScroll = scrollHeight>0 ? scrollY/scrollHeight : 0; }, {passive:true});
 window.scrollToZone = i => window.scrollTo({ top: zoneThresholds[i]*scrollHeight, behavior:'smooth' });
 const pieceRanges = [{start:0.01,peak:0.05,end:0.095},{start:0.095,peak:0.14,end:0.185},{start:0.185,peak:0.23,end:0.275},{start:0.275,peak:0.32,end:0.365},{start:0.365,peak:0.41,end:0.455},{start:0.455,peak:0.50,end:0.545},{start:0.545,peak:0.59,end:0.635},{start:0.635,peak:0.68,end:0.74}];
 function getVis(sc,r){ if(sc<r.start||sc>r.end) return 0; if(sc<r.peak) return (sc-r.start)/(r.peak-r.start); return 1-(sc-r.peak)/(r.end-r.peak); }
@@ -928,9 +931,10 @@ function animate(){
     const dn = ((zoneThresholds[descZone-1] ?? 0) + zoneThresholds[descZone]) / 2;
     if(scroll > up || scroll < dn) closeDesc();
   }
+  for(const vd of _videos){ const on = !!(vd.cluster && vd.cluster.parent && vd.cluster.parent.visible); if(on && vd.v.paused) vd.v.play().catch(()=>{}); else if(!on && !vd.v.paused) vd.v.pause(); }
   pieces.forEach((p,idx)=>{
     const r = pieceRanges[idx];
-    if(scroll > r.start-0.08 && scroll < r.end+0.08) loadClusterTextures(p.cluster);   // lazy-load this section's textures on approach
+    if((_userScrolled || t > 1.5) && scroll > r.start-0.08 && scroll < r.end+0.08) loadClusterTextures(p.cluster);   // lazy-load this section's textures on approach
     const vis = getVis(scroll, r);
     p.wrapper.visible = vis>0.01;
     if(!p.wrapper.visible) return;
