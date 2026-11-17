@@ -5,9 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Jan Lönnqvist · Portfolio</title>
+<link rel="preload" href="fonts/Fit.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/Loos-Medium.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="modulepreload" href="./lib/three.module.min.js">
+<script>if('scrollRestoration' in history) history.scrollRestoration='manual';</script>
 <style>
-@font-face { font-family:'Fit'; src:url('fonts/Fit.otf') format('opentype'); font-weight:400; font-display:swap; }
-@font-face { font-family:'Loos'; src:url('fonts/Loos-Medium.otf') format('opentype'); font-weight:100 900; font-display:swap; }
+@font-face { font-family:'Fit'; src:url('fonts/Fit.woff2') format('woff2'), url('fonts/Fit.otf') format('opentype'); font-weight:400; font-display:swap; }
+@font-face { font-family:'Loos'; src:url('fonts/Loos-Medium.woff2') format('woff2'), url('fonts/Loos-Medium.otf') format('opentype'); font-weight:100 900; font-display:swap; }
 :root {
     --bg: #d6d9de;
     --accent: #33373d;
@@ -337,6 +341,7 @@ nav {
 <div class="zone zone-hero active" data-zone="0">
     <div class="hero-label">Jan Lönnqvist, Senior Designer · Art Director · Design Leader</div>
     <div class="hero-stage" id="heroStage"><h1 class="hero-name" id="heroName">Lönnqvist</h1></div>
+    <script>(function(){ var h=document.getElementById('heroName'), t=h.textContent; h.textContent=''; [].forEach.call(t,function(ch,i){ var s=document.createElement('span'); s.className='hl'; s.textContent=ch; s.style.animationDelay=(0.15+i*0.05)+'s'; h.appendChild(s); }); })();</script>
     <p class="hero-role">12+ years of brand identity, design systems and campaigns for global brands, <em>multi-market creative direction, design and leadership.</em></p>
 </div>
 
@@ -479,7 +484,6 @@ nav {
 
 <div id="scroll-spacer"></div>
 
-<link rel="modulepreload" href="./lib/three.module.min.js">
 <!-- LOADER dismissal lives in a PLAIN script (not the module) so it runs the instant the page parses.
      If it lived in the type=module below, it couldn't run until three.module.js finished downloading —
      on a phone that's several seconds, during which the tall page scrolls natively but nothing dismisses
@@ -545,6 +549,12 @@ document.querySelectorAll('a, .btn').forEach(el => {
 // LOADER dismissal now runs in a plain <script> in <head> (before this module) so it works even while
 // three.module.js is still downloading on mobile. window.__dismissLoader is defined there; the scroll
 // handler below also calls it as a belt-and-suspenders.
+
+// Creating the WebGL context is one long blocking task on phones. Let the landing paint and play its
+// entrance first (~1.3s), unless the visitor touches/scrolls sooner.
+await new Promise(res=>{ let done=false; const go=()=>{ if(done) return; done=true; requestAnimationFrame(()=>setTimeout(res,0)); };
+  setTimeout(go, Math.max(0, 1300-performance.now()));
+  ['scroll','touchstart','wheel','pointerdown'].forEach(ev=>addEventListener(ev, go, {once:true, passive:true})); });
 
 // RENDERER
 const canvas = document.getElementById('webgl');
@@ -902,12 +912,11 @@ const l1 = new THREE.PointLight(0x8fd6ff, 1.6, 55); l1.position.set(-9,5,8); sce
 const l2 = new THREE.PointLight(0xc9a8ff, 1.2, 55); l2.position.set(9,-5,-6); scene.add(l2);
 
 // SCROLL / ZONES
-if('scrollRestoration' in history) history.scrollRestoration='manual';   // always start fresh at the hero, never restore a stale scroll position
 let scroll=0, targetScroll=0;
 let scrollHeight = document.getElementById('scroll-spacer').offsetHeight - innerHeight;
 function recalcScroll(){ scrollHeight = document.getElementById('scroll-spacer').offsetHeight - innerHeight; targetScroll = scrollHeight>0 ? scrollY/scrollHeight : 0; }
 addEventListener('resize', recalcScroll);   // mobile URL-bar / orientation changes innerHeight
-window.scrollTo(0,0);   // start at the hero once, synchronously (scrollRestoration is manual); NO late load-event reset that would yank a scrolling user back
+targetScroll = scrollHeight>0 ? scrollY/scrollHeight : 0; scroll = targetScroll;   // the module starts late now: pick up wherever the visitor already scrolled, never yank them back (scrollRestoration is manual, set in <head>)
 addEventListener('pageshow', e=>{ if(e.persisted){ window.scrollTo(0,0); scroll=targetScroll=0; } });   // bfcache back-nav only, never fires mid initial load
 const zones = document.querySelectorAll('.zone');
 const zoneLabel = document.getElementById('zoneLabel');
@@ -1070,13 +1079,7 @@ addEventListener('resize', ()=>{ titleZone=-1; });
 const heroName = document.getElementById('heroName');
 const HL = [];
 if(heroName){
-  const txt = heroName.textContent; heroName.textContent = '';
-  [...txt].forEach((ch, i)=>{
-    const s = document.createElement('span'); s.className = 'hl'; s.textContent = (ch===' '?' ':ch);
-    s.style.animationDelay = (0.15 + i*0.05) + 's';
-    heroName.appendChild(s);
-    HL.push({ el:s, cx:0, cy:0, dx:0, dy:0, dr:0, ds:1 });
-  });
+  heroName.querySelectorAll('.hl').forEach(s=> HL.push({ el:s, cx:0, cy:0, dx:0, dy:0, dr:0, ds:1 }));   // letters are split at parse time, right after the h1
   const measureHL = ()=>{ HL.forEach(o=>o.el.style.transform=''); HL.forEach(o=>{ const r=o.el.getBoundingClientRect(); o.cx=r.left+r.width/2; o.cy=r.top+r.height/2; }); };
   measureHL(); setTimeout(measureHL, 500); addEventListener('resize', measureHL);
   if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>setTimeout(measureHL,60));
