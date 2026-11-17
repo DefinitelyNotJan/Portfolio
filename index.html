@@ -303,7 +303,10 @@ nav {
     .zone-title::after, .zone-side.right .zone-title::after { margin-left: 0; }
     .case-hook { font-size: 17px; max-width: none; }
     .case-narr p { font-size: 13.5px; max-width: none; }
-    .case-stat { margin-top: auto; }
+    .zone-side.right .case-hook, .zone-side.right .case-narr p, .zone-side.right .case-lede { margin-left: 0; }   /* right-side sections start flush left like the rest */
+    .case-stat, .zone-side.right .case-stat { margin-top: auto; justify-content: flex-start; }
+    .zone-side.right .case-row { flex-direction: row; }
+    .zone-side.right .zone-tags { justify-content: flex-start; }
     .case-stat .num { font-size: clamp(46px, 15vw, 88px); }
     .zone-marker { right: 24px; bottom: 24px; }
     .cta-buttons { flex-direction: column; align-items: center; }
