@@ -683,7 +683,8 @@ function makeMediaTexture(url, onReady){
     loader.load(url, tex=>{
       tex.colorSpace=THREE.SRGBColorSpace; tex.minFilter=THREE.LinearFilter; tex.magFilter=THREE.LinearFilter; tex.generateMipmaps=false;
       tex.wrapS=tex.wrapT=THREE.ClampToEdgeWrapping; tex.repeat.set(1/cfg.cols,1/cfg.rows); tex.offset.set(0,1-1/cfg.rows);
-      spriteAnims.push({tex,cfg}); onReady(tex, cfg.aspect);
+      if(isMobile){ _enqueueTex(()=>{ renderer.initTexture(tex); spriteAnims.push({tex,cfg}); onReady(tex, cfg.aspect); }); }
+      else { spriteAnims.push({tex,cfg}); onReady(tex, cfg.aspect); }
     });
     return;
   }
@@ -713,15 +714,17 @@ function makeMediaTexture(url, onReady){
     return;
   }
   if(isMobile){
-    // downscale to a light texture (no mipmaps, no anisotropy) so phones don't freeze decoding/uploading full-res images on first scroll
+    // Phones: upload the decoded <img> directly (img/m copies are already <=1024px). No 2D-canvas detour:
+    // iOS Safari turns canvas->WebGL uploads into a slow GPU readback, ~hundreds of ms per image, which froze
+    // the page for seconds when a section's images all hit the GPU on the first scroll. Each texture is pushed
+    // to the GPU on its own frame (renderer.initTexture) before it is shown, so no single frame stalls.
     const im = new Image();
     im.onload = ()=>{ (im.decode ? im.decode().catch(()=>{}) : Promise.resolve()).then(()=>{ _enqueueTex(()=>{
-      const iw = im.naturalWidth||1, ih = im.naturalHeight||1, MAXDIM = 1024, sc = Math.min(1, MAXDIM/Math.max(iw,ih));
-      const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(iw*sc)); c.height = Math.max(1, Math.round(ih*sc));
-      c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
-      const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+      const tex = new THREE.Texture(im); tex.colorSpace = THREE.SRGBColorSpace;
       tex.generateMipmaps = false; tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; tex.anisotropy = 1;
-      onReady(tex, iw/ih);
+      tex.needsUpdate = true;
+      renderer.initTexture(tex);
+      onReady(tex, (im.naturalWidth||1)/(im.naturalHeight||1));
     }); }); };
     im.src = url;
     return;
